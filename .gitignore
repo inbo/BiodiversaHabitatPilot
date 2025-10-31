@@ -12,3 +12,4 @@
 *.xlsx
 
 venv/
+.Rproj.user
