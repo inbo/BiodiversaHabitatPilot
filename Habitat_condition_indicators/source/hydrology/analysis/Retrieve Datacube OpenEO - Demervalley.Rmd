@@ -1,0 +1,171 @@
+---
+title: "Retrieve Datacube Open EO"
+author: 
+  - name: "Sebastiaan Verbesselt"
+    affiliation: "Instituut voor Natuur- en Bosonderzoek"
+    orcid: "0000-0003-0173-1123"
+  - name: "Hans Gardfjell"
+    affiliation: "Sveriges Lantbruksuniversitet"
+    orcid: "0009-0004-5304-3095"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      df_print: paged
+      toc: true
+      toc_float: true
+      number_sections: true
+      code_folding: show
+knit: (function(input, ...) {rmarkdown::render(input, output_file="./source/hydrology/analysis/Retrieve_Datacube_Open_EO-Demervalley.html")})
+---
+
+
+```{r author-info, results='asis', echo=FALSE}
+cat("
+<p>
+<strong>Sebastiaan Verbesselt</strong><br>
+Instituut voor Natuur- en Bosonderzoek<br>
+<a href='https://orcid.org/0000-0003-0173-1123' target='_blank'>
+<img src='../media/Orcid_icon.png' alt='ORCID' 
+     style='width:18px; vertical-align:middle; margin-right:4px;'> 
+https://orcid.org/0000-0003-0173-1123
+</a>
+</p>
+
+<p>
+<strong>Hans Gardfjell</strong><br>
+Sveriges Lantbruksuniversitet<br>
+<a href='https://orcid.org/0009-0004-5304-3095' target='_blank'>
+<img src='../media/Orcid_icon.png' alt='ORCID' 
+     style='width:18px; vertical-align:middle; margin-right:4px;'> 
+https://orcid.org/0009-0004-5304-3095
+</a>
+</p>
+")
+
+```
+
+
+
+# Load required libraries
+
+```{r import libraries, eval = FALSE, warning = FALSE, message = FALSE}
+library(openeo)
+library(sf)
+library(dplyr)
+library(INBOtheme)
+library(INBOmd)
+```
+
+# Connect to openEO backend
+
+You first need to create an account op the Copernicus Data Space Ecosystem (CDSE) in order to get access to OpenEO.
+
+<https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/auth?client_id=account-console&redirect_uri=https%3A%2F%2Fidentity.dataspace.copernicus.eu%2Fauth%2Frealms%2FCDSE%2Faccount%2F%23%2F&state=a8075610-e75a-4fc8-90f3-08e59d243f4c&response_mode=fragment&response_type=code&scope=openid&nonce=f8d35ab0-061f-4fb9-843a-746f6eeda9ce&code_challenge=W6xjfkziopIjZAUIgAoq7RSFiSrPv9Lr4ztu3GhAa3U&code_challenge_method=S256>
+
+Once you have access to OpenEO, you have access to all the supported back-ends (without having additional API's) like SentinelHub, Terrascope, EODC,... 
+
+![The platforms that make up the openEO federated platform. Source: <https://docs.openeo.cloud/federation/#data-collections>](../media/federationc4cdfa06.png)
+
+```{r connect to OpenEO accout, eval = FALSE}
+connection <- connect("https://openeo.dataspace.copernicus.eu")
+login()
+```
+
+# Define the characteristics of your datacube download.
+
+## Define your area of interest (AOI)
+
+```{r aoi, eval = FALSE}
+polygons <- st_read("./source/hydrology/data/raw/Demervallei.gpkg") %>%
+st_transform(crs = 4326)
+```
+
+## Define bands to download
+
+```{r bands, eval = FALSE}
+bands <- c("B02", "B03", "B04", "B05", "B08", "B8A", "B11", "B12",
+"SCL")
+```
+
+## Submit all batch jobs and store them in a list
+```{r submit batch jobs, eval = FALSE}
+jobs <- list()
+
+for (i in 1:nrow(polygons)) { 
+  polygon <- polygons[i, ] 
+  bbox <- st_bbox(polygon)
+  
+  # Get process graph builder
+  process <- processes()
+
+  # Define spatial extent
+  spatial_extent <- list(
+    west = bbox["xmin"],
+    south = bbox["ymin"],
+    east = bbox["xmax"],
+    north = bbox["ymax"],
+    crs = 4326
+  )
+
+  # Define temporal extent (all available years)
+  temporal_extent <- list("2025-10-06", "2025-10-14")
+
+  # Load Sentinel-2 L2A data using process graph builder
+  collection <- process$load_collection(
+    id = "SENTINEL2_L2A",
+    spatial_extent = spatial_extent,
+    temporal_extent = temporal_extent,
+    bands = bands
+  )
+
+  # Save the result using process$save_result
+  result <- process$save_result(data = collection, format = "NetCDF")
+
+  # Create the batch job
+  job <- create_job(graph = result, title = paste0("polygon_Demervallei_last_", i)) # polygon_Demervallei_i -> was from 2020-01-01 - 2024-12-31
+
+  # Submit the job
+  #job$send_job()
+
+  jobs[[i]] <- job
+  cat("Job for polygon", i, "submitted./n")
+}
+
+```
+
+# Submit the job 
+```{r submit the job, eval = FALSE}
+list_jobs() %>% names() -> job_names
+
+for(i in 1:nrow(polygons)) { start_job(job_names[i]) }
+```
+
+
+# Monitor the status of your batch jobs on OpenEO
+```{r monitor the status of your batch jobs, eval = FALSE}
+list_jobs() %>% as_tibble() %>% View() # View the list of batch jobs on your OpenEO account
+
+list_jobs() %>% as_tibble() %>% count(status) # See the status of your batch jobs
+
+list_jobs() %>% as_tibble() -> jobs_df # create a dataframe of your batch jobs
+
+#þid <- unlist(jobs_df[1,"id"]) #downname <- download_results(id, folder = "S2/") #print(downname)
+```
+
+
+# When your batch jobs are finished, you can donwload them with this code to a specific folder:
+```{r donwload, eval = FALSE}
+for(i in 1:nrow(polygons)) { 
+  id <- unlist(jobs_df[i,"id"]) 
+  name <- paste0("./source/hydrology/data/intermediate/", gsub(" ", "_", unlist(jobs_df[i, "title"])), ".nc") 
+  
+  print(name) 
+  
+  download_results(id, folder = "./source/hydrology/data/intermediate/") -> downname
+  
+  
+  file.rename(unlist(downname), name) 
+  }
+```
+
+

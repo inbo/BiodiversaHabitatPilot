@@ -1,0 +1,14 @@
+*.nc
+*.gpkg
+*.tif
+*.tiff
+
+*.shp
+*.dbf
+*.prj
+*.cpg
+*.shx
+
+*.xlsx
+
+venv/
