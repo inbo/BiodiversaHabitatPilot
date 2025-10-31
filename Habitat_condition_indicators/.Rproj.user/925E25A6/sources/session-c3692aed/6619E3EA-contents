@@ -55,7 +55,7 @@ We are going to evaluate the study areas after our field visit (15/10/2025). Ple
 
 ## Time series evaluation Webbekomsbroek
 
-Before this workshop, we have already downloaded the datacube for the study area on OpenEO based on Hans's script. The datacube and the other required data can be found here: "./source/hydrology/data/".
+Before this workshop, we have already downloaded the datacube for the study area on OpenEO based on Hans's script. The datacube and the other required data can be found here: "./source/hydrology/data/Retrieve_Datacube_Open_EO-Demervalley.Rmd".
 
 Please download the file together with the shapefile in the folder.
 
