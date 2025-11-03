@@ -440,7 +440,7 @@ obj_df$STR2 <- swir_to_str(obj_df$b12)
 summary(obj_df)
 ```
 
-Since the radiometric values of Sentinel-2 L2 products can have a different offset values (due to the change in processing baseline (4.00), introduces in Januari 2022): 0 or 1000. the DN (Digital Number) values have a **radiometric offset of -1000 applied to ensure negative values can be represented**. We check the min. and max. values within our datacube. [https://sentiwiki.copernicus.eu/web/s2-processing#S2Processing-RadiometricOffset](#0)
+Since the radiometric values of Sentinel-2 L2 products can have a different offset values (due to the change in processing baseline (4.00), introduces in January 2022): 0 or 1000. the DN (Digital Number) values have a **radiometric offset of -1000 applied to ensure negative values can be represented**. We check the min. and max. values within our datacube. [https://sentiwiki.copernicus.eu/web/s2-processing#S2Processing-RadiometricOffset](#0)
 
 ```{r, check DN values}
 # Check if there are no issues with the DN Values of the datacube (0-10000, so no offset with 1000).

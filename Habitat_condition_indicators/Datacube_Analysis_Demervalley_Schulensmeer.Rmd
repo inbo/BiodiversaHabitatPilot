@@ -1,0 +1,1960 @@
+---
+title: "Workshop Flanders - inundation time series"
+author: "Sebastiaan Verbesselt"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+# Biodiversa+ time series analsysis for hydrology indicators:
+
+## Time series evaluation Demer valley (Schulensmeer)
+
+A datacube for the study area was already download from OpenEO based (see OpenEO_Retrieve_datacube_Demervallei.R script) for the period 01/01/2020 - 13/10/2025.
+
+### Step 1: Upload the required libraries/packages
+
+```{r}
+# Check automatically if you still need to install packages
+list.of.packages <- c("tidyverse", "sf", "stars", "mapview", "lubridate", "dplyr", "rpart", "rpart.plot", "leaflet", "mapedit", "scales", "ggplot2", "rstudioapi","tidyr","zoo","np","kernlab","leafem","viridis","cubelyr","terra","signal","abind","dygraphs","xts")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+# Load the packages
+library(tidyverse)
+library(sf)
+library(stars)
+library(mapview)
+library(lubridate)
+library(dplyr)
+library(rpart)
+library(rpart.plot)
+library(leaflet)    # for interactive maps
+library(leafem)
+library(mapedit)    # for drawing polygons interactively
+library(scales)
+library(ggplot2)
+library(rstudioapi)
+library(tidyr)
+library(zoo)
+library(np)         # kernel regression
+library(kernlab)    # Gaussian processes
+library(viridis)
+library(terra)
+library(signal)
+library(abind)
+library(dygraphs)
+library(xts)
+```
+
+### Step 2: Load the datasets
+
+Refer to the location of your datafolder (interactively):
+
+```{r}
+if (requireNamespace("rstudioapi", quietly = TRUE)) {
+  folder <- rstudioapi::selectDirectory(caption = "Select a folder")
+  print(folder)
+} else {
+  message("rstudioapi not available; please install it with install.packages('rstudioapi').")
+}
+
+if (is.null(folder)){
+  folder <- "G:/Gedeelde drives/Team_BioDiv/5_Projecten/2024_Biodiversa_habitatpilot/WP2_3/Inundation/HabPil_inundation_R data/Data/Habitat patches inundated/"
+} 
+
+setwd(folder)
+```
+
+Load the datasets:
+
+1.  The area of interest (AOI):
+
+```{r}
+wetlands <- st_read(paste0(folder,"wetlands_schulensmeer.gpkg")) |> st_transform(32631) # Transform to local crs system (WGS 84 / UTM zone 31N - EPSG:32631)
+
+grasslands <- st_read(paste0(folder,"/grasslands_schulensmeer.gpkg")) |> st_transform(32631) # Transform to local crs system (WGS 84 / UTM zone 31N - EPSG:32631)
+
+polygons <- rbind(wetlands,grasslands)
+
+
+plot(polygons["HAB1"])
+```
+
+Select your area:
+
+```{r}
+AOI <- polygons %>% dplyr::filter(HAB1 == "6510_hu")
+plot(AOI["HAB1"])
+```
+
+2.  Load the datacube:
+
+```{r}
+
+ts_folder <- "G:/Gedeelde drives/Team_BioDiv/5_Projecten/2024_Biodiversa_habitatpilot/WP2_3/Inundation/Validatie inundatie modellen/Tijdsreeksanalyse studiegebieden/S2-tijdreeksdata"
+# First: proxy loading (fast)
+obj <- read_stars(paste0(ts_folder,"/polygon_Demervallei_2.nc"), proxy = TRUE) # Region code: 1: Kloosterbeemden, 2: Schulensmeer, 3: Webbekomsbroek
+obj2 <- read_stars(paste0(ts_folder,"/polygon_Demervallei_new_2.nc"), proxy = TRUE) 
+
+obj3 <- read_stars(paste0(ts_folder,"/polygon_Demervallei_last_2.nc"), proxy = TRUE) 
+ 
+# Ensure both have the same dimension names
+names(st_dimensions(obj))
+names(st_dimensions(obj2))
+names(st_dimensions(obj3))
+
+# Drop any extra dimension (e.g., a band dimension named "X" or similar)
+obj  <- adrop(obj)
+obj2 <- adrop(obj2)
+obj3 <- adrop(obj3)
+ 
+# Now combine along time
+combined <- c(obj, obj2, along = "t")
+combined <- c(combined, obj3, along = "t")
+st_dimensions(obj)
+st_dimensions(obj2)
+st_dimensions(obj3)
+st_dimensions(combined)
+```
+
+Remove the data layers that we wont use to make sure we have enough free memory.
+
+```{r}
+obj <- combined # Assign the combined datacube to the obj datacube (make a copy)
+rm(obj2, obj3, combined) # Remove obj2, combined.  
+
+# Load now the data in memory:
+obj <- st_as_stars(obj, along = "t")
+```
+
+3.  Load the WMS links for the ortho images, DEM and high vegetation maps of Flanders:
+
+```{r}
+wms_ortho_most_recent <- "https://geo.api.vlaanderen.be/OMWRGBMRVL/wms" # Most recent ortho image, winter, medium scale resolution.
+wms_ortho <- "https://geo.api.vlaanderen.be/OMW/wms" # historical ortho images, winter, medium scale resolution.
+wms_DEM <- "https://geo.api.vlaanderen.be/DHMV/wms" # Digital elevation model
+
+wms_ANB <- "https://geo.api.vlaanderen.be/ANB/wms" # WMS layer ANB --> groenkaart (map of high vegetation)
+```
+
+4.  Load the Jussila model
+
+    Jussila, Tytti, Risto K. Heikkinen, Saku Anttila, e.a. ‘Quantifying Wetness Variability in Aapa Mires with Sentinel-2: Towards Improved Monitoring of an EU Priority Habitat’. *Remote Sensing in Ecology and Conservation* 10, nr. 2 (2024): 172-87. <https://doi.org/10.1002/rse2.363>.
+
+```{r}
+model_folder <- "G:/Gedeelde drives/Team_BioDiv/5_Projecten/2024_Biodiversa_habitatpilot/WP2_3/Inundation/Validatie inundatie modellen/Validatie classificatie modellen/Rscripts - validatie classificatie modellen"
+# Load the decision tree model
+load(paste0(model_folder,"/jussila_decisiontree.RData")) 
+
+# Visualize the decision tree structure
+rpart.plot(tree_jussila, tweak = 1, extra = 0)
+```
+
+### Step 3: Data pre-processing
+
+We will exclude "trees" from the image based on the most recent ortho image of Flanders. This because the inundation models are developed for "open" habitats. Normally, we could use regional datasets or European datasets for forests / tree cover / high vegetation cover to do the masking. E.g.: <https://land.copernicus.eu/en/products/high-resolution-layer-forests-and-tree-cover>. For Flanders, we masked trees interactively based on the High vegetation (\> 3m) layer from the Flanders Groenkaart (2021) and the most recent available ortho image (winter, medium resolution).
+
+```{r}
+outputfolder <- "G:/Gedeelde drives/Team_BioDiv/5_Projecten/2024_Biodiversa_habitatpilot/WP2_3/Inundation/Validatie inundatie modellen/Tijdsreeksanalyse studiegebieden/output"
+```
+
+This code (commented out) was used to create polygon shapes for the trees within the area. The final polygons are saved in an output directory.
+
+```{r}
+# Ensure shapefile is in the right CRS (WGS84 lon/lat = EPSG:4326, since WCS expects that)
+AOI_wgs84 <- st_transform(AOI, 4326)
+
+# Extract bounding box
+bb <- st_bbox(AOI_wgs84)
+
+# Compute centroid of bbox
+center_lng <- (bb["xmin"] + bb["xmax"]) / 2
+center_lat <- (bb["ymin"] + bb["ymax"]) / 2
+# 
+# map <- leaflet() %>%
+#   addWMSTiles(
+#     wms_ortho_most_recent,
+#     layers = "Ortho",
+#     options = WMSTileOptions(format = "image/png", transparent = FALSE), group = "Ortho") %>%
+#   addWMSTiles(
+#     wms_ANB,
+#     layers = "Grnkrt21",
+#     options = WMSTileOptions(format = "image/png", transparent = FALSE), group = "Grnkrt21") %>%
+#   fitBounds(
+#     lng1 = bb[["xmin"]],
+#     lat1 = bb[["ymin"]],
+#     lng2 = bb[["xmax"]],
+#     lat2 = bb[["ymax"]]
+#   )  %>%
+#   addPolygons(data = AOI_wgs84, color = "red", weight = 2) %>%
+#   addLayersControl(
+#     baseGroups = c("Ortho","Grnkrt21"),
+#     options = layersControlOptions(collapsed = FALSE)
+#   )
+# 
+# 
+# # Allow interactive drawing of polygons and save as trees_object
+# drawn <- mapedit::editMap(map)
+# 
+# # This returns an sf object with drawn features
+# trees_object <- drawn[["drawn"]]
+# trees_object <- st_make_valid(trees_object)
+# st_write(trees_object, paste0(outputfolder, "/", "trees_SM.shp"))
+```
+
+![](images/clipboard-2242592071.png)
+
+![](images/clipboard-2922383982.png)
+
+Now, we can mask out the trees form the study area.
+
+```{r}
+# Inspect result
+trees_object <- st_read(paste0(outputfolder, "/", "trees_SM.shp")) 
+print(trees_object)
+
+par(mfrow=c(1,2))
+plot(st_geometry(AOI_wgs84),border='grey',axes=T,main="Habitat boundary")
+for (i in 1:nrow(trees_object)){
+   AOI_wgs84 <- st_difference(AOI_wgs84,trees_object[i,])
+}
+plot(st_geometry(AOI_wgs84,border='grey',axes=T,main="Habitat boundary without trees"))
+par(mfrow=c(1,1))
+```
+
+See how inundation changes in in the past (based on winter ortho images) for your area. Select the year the want to visualize.
+
+```{r}
+# Website with the public wms files for Flanders: https://wms.michelstuyts.be/?lang=nl 
+layer2024 <- "OMWRGB24VL"# select the winter image of 2024
+layer2023 <- "OMWRGB23VL" # select the winter image of 2023
+layer2022 <- "OMWRGB22VL"# select the winter image of 2022
+layer2021 <- "OMWRGB21VL"# select the winter image of 2021
+layer2020 <- "OMWRGB20VL"# select the winter image of 2020
+
+map <- leaflet() %>%
+  addWMSTiles(
+    wms_ortho,
+    layers = layer2020,
+    options = WMSTileOptions(format = "image/png", transparent = FALSE),
+    group = "OMWRGB20VL"
+  ) %>%
+  addWMSTiles(
+    wms_ortho,
+    layers = layer2021,
+    options = WMSTileOptions(format = "image/png", transparent = FALSE),
+    group = "OMWRGB21VL"
+  ) %>%
+  addWMSTiles(
+    wms_ortho,
+    layers = layer2022,
+    options = WMSTileOptions(format = "image/png", transparent = FALSE),
+    group = "OMWRGB22VL"
+  ) %>%
+  addWMSTiles(
+    wms_ortho,
+    layers = layer2023,
+    options = WMSTileOptions(format = "image/png", transparent = FALSE),
+    group = "OMWRGB23VL"
+  ) %>%
+  addWMSTiles(
+    wms_ortho,
+    layers = layer2024,
+    options = WMSTileOptions(format = "image/png", transparent = FALSE),
+    group = "OMWRGB24VL"
+  ) %>%
+  fitBounds(
+    lng1 = bb[["xmin"]],
+    lat1 = bb[["ymin"]],
+    lng2 = bb[["xmax"]],
+    lat2 = bb[["ymax"]]
+  )  %>%
+  addPolygons(data = AOI_wgs84, color = "red", weight = 2) %>%
+  addLayersControl(
+    baseGroups = c("OMWRGB20VL","OMWRGB21VL","OMWRGB22VL","OMWRGB23VL","OMWRGB24V"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
+map
+```
+
+Most recent:
+
+Date winter images study area:
+
+-   most recent: 5/03/2025 (for Kloosterbeemden ), 28/03/2025 (for Schulensmeer), Webbekomsbroek (both 5/03/2025 (west side) and 28/03/2025 (east side).
+
+-   2024: 06/04/2024 (for Kloosterbeemden & Webbekomsbroek), 30/07/2024 for Schulensmeer
+
+-   2023: 01/03/2023 (for Kloosterbeemden & Webbekomsbroek), 31/05/2023 for Schulensmeer
+
+-   2022: 04/03/2022 (for Kloosterbeemden ),18/03/2022 (for Schulensmeer), Webbekomsbroek (both 4/03/2025 (west side) and 18/03/2025 (east side).
+
+-   2021: 01/03/2021 (for Kloosterbeemden & Webbekomsbroek), 21/02/2021 for Schulensmeer
+
+-   2020: 24/03/2020 (for Kloosterbeemden & Webbekomsbroek), 17/03/2020 for Schulensmeer
+
+```{r}
+# layer <- "OMWRGB22VL_vdc"# select the winter image of 2020
+# layer2 <- "OMWRGB22VL"
+# map <- leaflet() %>%
+#   addWMSTiles(
+#     wms_ortho,
+#     layers = layer,
+#     options = WMSTileOptions(format = "image/png", transparent = FALSE), group = "vdc") %>%
+#   addWMSTiles(
+#     wms_ortho,
+#     layers = layer2,
+#     options = WMSTileOptions(format = "image/png", transparent = FALSE), group = "ortho") %>%
+#   fitBounds(
+#     lng1 = bb[["xmin"]],
+#     lat1 = bb[["ymin"]],
+#     lng2 = bb[["xmax"]],
+#     lat2 = bb[["ymax"]]
+#   )  %>%
+#   addPolygons(data = AOI_wgs84, color = "red", weight = 2) %>%
+#   addLayersControl(
+#     baseGroups = c("vdc","ortho"))
+# 
+# map
+```
+
+Preprocess the datacube:
+
+-   Cloud and shadow masking (remove scenes where "vegetation", "bare soil" and "water" represent \<= 80 % of the pixels).
+
+```{r}
+# Sentinel-2 SCL class codes and definitions
+dplyr::tibble(
+  SCL = 0:11,
+  SCL_name = c(
+    "No data",
+    "Saturated or defective",
+    "Dark area pixels",
+    "Cloud shadow",
+    "Vegetation",
+    "Bare soils",
+    "Water",
+    "Cloud low probability / Unclassified",
+    "Cloud medium probability",
+    "Cloud high probability",
+    "Thin cirrus",
+    "Snow or ice"
+  )
+) -> scl_code
+print(scl_code)
+
+# Find all scenes with at least 95% of pixels classified as SCL 4, 5, or 6 (vegetation, bare soils, water)
+# Mask out all remaining pixels with SCL values not equal to 4, 5, or 6
+clear_dates <-
+  obj |> 
+  as_tibble() |> 
+  group_by(t) |> 
+  summarize(prop_scl = sum(if_else(SCL %in% c(4,5,6), 1, 0)) / n()) |> 
+  dplyr::filter(prop_scl > 0.80) |> # We can change this threshold if necessary. 
+  pull(t) 
+
+
+obj_clear <-
+  obj |>
+  dplyr::filter(t %in% clear_dates) |>
+  mutate(across(everything(), ~ if_else(SCL %in% c(4, 5, 6), ., NA)))
+
+rm(obj) # we won't use this object anymore.
+```
+
+-   Regional masking: limit the datacube to your area (without trees)
+
+```{r}
+# Re-project your area without trees back to the local Belgian crs system:
+AOI <- st_transform(AOI_wgs84, 32631)
+
+# Mask out the polygon
+obj_poly <-
+  obj_clear |>
+  st_crop(AOI)
+
+rm(obj_clear) # we won't use this object anymore.
+```
+
+-   Calculate the different vegetation indices
+
+```{r}
+# Convert stars object to a data frame for prediction
+obj_df <- as.data.frame(obj_poly)
+names(obj_df) <- c("x","y","t","b02","b03","b04","b05","b08","b8a","b11","b12","SCL")
+# Add/calculate the necessary indices for the classification
+obj_df$mndwi12 <- (obj_df$b03 - obj_df$b12) / (obj_df$b03 + obj_df$b12)
+obj_df$mndwi11 <- (obj_df$b03 - obj_df$b11) / (obj_df$b03 + obj_df$b11)
+obj_df$ndvi <- (obj_df$b8a - obj_df$b04) / (obj_df$b8a + obj_df$b04)
+obj_df$ndwi_mf <- (obj_df$b03 - obj_df$b8a) / (obj_df$b03 + obj_df$b8a) 
+obj_df$ndmi_gao11 <- (obj_df$b8a - obj_df$b11) / (obj_df$b8a + obj_df$b11) 
+
+# additional indices. STR should be a good indication of moisture
+swir_to_str <- function(swir) { # function to calculate moisture index STR (based on SWIR band 11 or 12)
+  swir <- swir/10000
+  STR <- ((1-swir)^2)/(2*swir) #5.29
+  return(STR)
+}
+obj_df$STR1 <- swir_to_str(obj_df$b11)
+obj_df$STR2 <- swir_to_str(obj_df$b12)
+summary(obj_df)
+```
+
+Since the radiometric values of Sentinel-2 L2 products can have a different offset values (due to the change in processing baseline (4.00), introduces in Januari 2022): 0 or 1000. the DN (Digital Number) values have a **radiometric offset of -1000 applied to ensure negative values can be represented**. We check the min. and max. values within our datacube. [https://sentiwiki.copernicus.eu/web/s2-processing#S2Processing-RadiometricOffset](#0)
+
+```{r}
+# Check if there are no issues with the DN Values of the datacube (0-10000, so no offset with 1000).
+# Check max values per column
+(min_vals <- sapply(obj_df[,4:11], function(x) if(is.numeric(x)) min(x, na.rm = TRUE) else NA))
+(max_vals <- sapply(obj_df[,4:11], function(x) if(is.numeric(x)) max(x, na.rm = TRUE) else NA))
+# Warn if any numeric column has a minimum value that exceeds 1000
+if (any(min_vals > 1000, na.rm = TRUE)) {
+  warning("Some columns in obj_df have min values greater than 1000") 
+}
+
+# Warn if any numeric column exceeds 10000
+if (any(max_vals > 10000, na.rm = TRUE)) {
+  warning("Some columns in obj_df have max values greater than 10000") 
+}
+```
+
+### Step 4: Classification
+
+```{r}
+# Keep the original x, y, t dimension form your stars object.
+# If we convert our stars object to a dataframe for classification, we lose the x, y, t information. When we want to convert it back to an array/datacube, we need to know the original dimensions.
+
+(dim <- st_dimensions(obj_poly)) # See the dimensions of x y and t
+nx <- dim$x$to - dim$x$from  + 1  # size in the x dimension
+ny <- dim$y$to - dim$y$from  + 1  # size in the y dimension
+nt <- dim$t$to - dim$t$from  + 1  # size in the t dimension
+```
+
+```{r}
+# Give all polygons an unique id
+AOI$ID <- 1:nrow(AOI)
+plot(AOI["ID"])
+```
+
+Classification based on Jussila's model:
+
+```{r}
+predictions <- predict(tree_jussila, obj_df, type = "class")
+
+# Convert factor to numeric codes
+pred_numeric <- as.numeric(predictions)
+
+# Set predictions to NA if the corresponding row in obj_df contains any NA (masked out values are set to NA instead of 1 or 2)
+pred_numeric[!complete.cases(obj_df)] <- NA
+
+# Store levels for later labeling
+(pred_levels <- levels(predictions))
+
+# Reshape to array
+pred_array <- array(pred_numeric, dim = c(nx, ny, nt))
+
+# Create stars object
+obj_classified <- st_as_stars(pred_array, dimensions = st_dimensions(obj_poly))
+st_crs(obj_classified) <- st_crs(obj_poly)
+
+# Visualize
+# Convert the stars object to factor using st_set_dimensions
+obj_classified_factor <- obj_classified[AOI]
+obj_classified_factor[[1]] <- factor(
+  obj_classified_factor[[1]],
+  levels = c(1, 2),
+  labels = pred_levels
+)
+
+plots_jussila <- list()
+# Plot with discrete scale
+for (i in 1:nrow(AOI)){
+  p <- ggplot() +
+    ggtitle("Class. (Jussila)") + 
+    geom_stars(data = obj_classified_factor[AOI[i,]]) +
+    geom_sf(data = AOI[i,], fill = NA, color = "red", linewidth = 1) +
+    facet_wrap(~t, ncol = 25) +
+    theme_minimal() +
+    theme(
+      strip.text = element_text(size = 6),   # <-- make facet titles smaller,
+      axis.text = element_blank(),          # remove axis tick labels
+      axis.ticks = element_blank(),         # remove tick marks
+    ) +
+    scale_fill_manual(
+      name = "Class",
+      values = c("dry" = "tan", "water" = "blue")
+    )
+  plots_jussila[[i]] <- p
+}
+```
+
+Comparison with the WiW classification:
+
+Lefebvre, Gaëtan, Aurélie Davranche, Loïc Willm, e.a. ‘Introducing WIW for Detecting the Presence of Water in Wetlands with Landsat and Sentinel Satellites’. *Remote Sensing* 11, nr. 19 (2019): 2210. <https://doi.org/10.3390/rs11192210>.
+
+```{r}
+watercl_wiw <- obj_df$b8a <= 1804 & obj_df$b12 <= 1131
+watercl_wiw <- watercl_wiw*1 
+pred_levels <- c("dry" , "water")
+
+# Reshape to array
+wiw_array <- array(watercl_wiw, dim = c(nx, ny, nt))
+
+# Create stars object
+obj_classified_wiw <- st_as_stars(wiw_array, dimensions = st_dimensions(obj_poly))
+st_crs(obj_classified_wiw) <- st_crs(obj_poly)
+
+# Visualize
+# Convert the stars object to factor using st_set_dimensions
+obj_classified_wiw_factor <- obj_classified_wiw[AOI]
+obj_classified_wiw_factor[[1]] <- factor(
+  obj_classified_wiw_factor[[1]],
+  levels = c(0, 1),
+  labels = pred_levels
+)
+
+plots_wiw <- list()
+# Plot with discrete scale
+for (i in 1:nrow(AOI)){
+  p <- ggplot() +
+  ggtitle("Class. (WiW)") + 
+  geom_stars(data = obj_classified_wiw_factor[AOI[i,]]) +
+  geom_sf(data = AOI[i,], fill = NA, color = "red", linewidth = 1) +
+  facet_wrap(~t, ncol = 25) +
+  theme_minimal()+
+    theme(
+    strip.text = element_text(size = 6),   # <-- make facet titles smaller,
+    axis.text = element_blank(),          # remove axis tick labels
+    axis.ticks = element_blank(),         # remove tick marks
+  ) +
+  scale_fill_manual(
+    name = "Class",
+    values = c("dry" = "tan", "water" = "blue")
+  )
+  plots_wiw[[i]] <- p
+}
+```
+
+Compare the results:
+
+```{r}
+# View the first plot
+plots_jussila[[1]]
+plots_wiw[[1]]
+```
+
+We can check the output of both classifications and compare it with an ortho image with the same date. E.g. 01/03/2023.
+
+```{r}
+# Extract the time values
+times <- st_get_dimension_values(obj_classified_wiw, "t")
+
+# Define your desired time
+target_time <- as.POSIXct("2023-03-01", tz = "UTC")
+
+# Find index of the nearest timestamp
+i <- which.min(abs(times - target_time))
+
+# Extract that layer
+layer_2023_03_01_wiw <- obj_classified_wiw[,,,i]
+layer_2023_03_01_Tytti <- obj_classified[,,,i] - 1 # convert values [1,2] --> [0,1]
+
+layer_2023_03_01_wiw<- layer_2023_03_01_wiw %>% st_warp(crs = 4326)
+layer_2023_03_01_Tytti <- layer_2023_03_01_Tytti %>% st_warp(crs = 4326)
+
+# Define your color palette
+palette_function <- function(stars_data){
+  if (min(stars_data, na.rm=T) == max(stars_data, na.rm=T)){
+    if (max(stars_data, na.rm=T)==1){
+      palette <- colorFactor(palette = "blue",domain = 1,na.color = "transparent")
+    } else {
+      palette <- colorFactor(palette = "tan",domain = 0,na.color = "transparent")
+    }
+      
+  }else {
+    palette <- colorFactor(palette = c("tan","blue"),domain= c(0,1),na.color = "transparent")
+  }
+}
+
+# Base map (your existing code)
+layer <- "OMWRGB23VL"
+
+map <- leaflet() %>%
+  addTiles(group = "OpenStreetMap") %>%  # <-- Adds OSM as base map
+  addWMSTiles(
+    wms_ortho,
+    layers = layer,
+    options = WMSTileOptions(format = "image/png", transparent = FALSE),
+    group = "OMWRGB20VL"
+  ) %>%
+  addWMSTiles(
+    wms_DEM,
+    layers = "DHMV_II_HILL_25cm",
+    options = WMSTileOptions(format = "image/png", transparent = TRUE),
+    group = "DHMV_II_HILL_25cm"
+  ) %>%
+  fitBounds(
+    lng1 = bb[["xmin"]],
+    lat1 = bb[["ymin"]],
+    lng2 = bb[["xmax"]],
+    lat2 = bb[["ymax"]]
+  ) %>%
+  addPolygons(data = AOI_wgs84, color = "red", weight = 2) %>%
+  addStarsImage(
+    layer_2023_03_01_wiw,
+    colors = palette_function(layer_2023_03_01_wiw[["X"]]),
+    opacity = 0.8,
+    group = "2023-03-01 Wiw"
+  ) %>%
+  addStarsImage(
+    layer_2023_03_01_Tytti,
+    colors = palette_function(layer_2023_03_01_Tytti[["X"]]),
+    opacity = 0.8,
+    group = "2023-03-01 Tytti"
+  ) %>%
+  addLayersControl(
+    baseGroups = c("OpenStreetMap","OMWRGB23VL", "DHMV_II_HILL_25cm"),
+    overlayGroups = c("2023-03-01 Wiw", "2023-03-01 Tytti"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
+map
+```
+
+Add soil moisture/wetness indices to your stars object.
+
+```{r}
+obj_wetness <-
+  obj_poly |>
+  mutate(NDMI = (B8A - B11) / (B8A + B11), # Gao's Moisture index
+         NDWI = (B03 - B8A) / (B03 + B8A), # Mcfeeters Water index
+         NDPI = (B03-B11)/(B03+B11), # Pond index. from slovakia Clizsky potok example 
+         STR = ((1-B11/10000)^2)/(2*B11/10000)) # Transformed SWIR. Should be linearly correlated with soil moisture (Sadeghi et al.,2017, https://doi.org/10.1016/j.rse.2017.05.041)
+```
+
+Visualize the different soil moisture indices for the last available date.
+
+```{r}
+# Extract that layer
+obj_wetness_target <- obj_wetness[,,,i] %>% st_warp(crs=4326)
+
+
+
+# Extract the time value from the layer
+date_value <- st_get_dimension_values(obj_wetness_target, "t")
+date_value
+
+# Define a viridis palette (yellow -> blue)
+# direction = -1 flips the default viridis (blue -> yellow) to yellow -> blue
+viridis_pal <- viridis::viridis(256, option = "D", direction = -1)
+
+# You can define a function to generate color scales for each layer dynamically
+palette_function <- function(layer) {
+  # Extract the numeric values safely
+  layer_values <- as.vector(st_as_stars(layer)[[1]])
+  
+  leaflet::colorNumeric(
+    palette = viridis_pal,
+    domain = layer_values,
+    na.color = "transparent"
+  )
+}
+
+# Create map with OSM background
+map <- leaflet() %>%
+  addTiles(group = "OpenStreetMap") %>%
+  addWMSTiles(
+    wms_ortho,
+    layers = layer,
+    options = WMSTileOptions(format = "image/png", transparent = FALSE),
+    group = "OMWRGB20VL"
+  ) %>%
+  addWMSTiles(
+    wms_DEM,
+    layers = "DHMV_II_HILL_25cm",
+    options = WMSTileOptions(format = "image/png", transparent = TRUE),
+    group = "DHMV_II_HILL_25cm"
+  ) %>%
+  fitBounds(
+    lng1 = bb[["xmin"]],
+    lat1 = bb[["ymin"]],
+    lng2 = bb[["xmax"]],
+    lat2 = bb[["ymax"]]
+  )  %>%
+  addStarsImage(
+    -obj_wetness_target["B11"],
+    colors = palette_function(-obj_wetness_target["B11"]), # multiply with -1 (because high values normally inidicate dry spots, not wet spots like in the other indices).
+    opacity = 0.8,
+    group = paste0(date_value, " B11")
+  ) %>%
+  addStarsImage(
+    obj_wetness_target["NDWI"],
+    colors = palette_function(obj_wetness_target["NDWI"]),
+    opacity = 0.8,
+    group = paste0(date_value, " NDWI")
+  ) %>%
+  addStarsImage(
+    obj_wetness_target["NDMI"],
+    colors = palette_function(obj_wetness_target["NDMI"]),
+    opacity = 0.8,
+    group = paste0(date_value, " NDMI")
+  ) %>%
+  addStarsImage(
+    obj_wetness_target["NDPI"],
+    colors = palette_function(obj_wetness_target["NDPI"]),
+    opacity = 0.8,
+    group = paste0(date_value, " NDPI")
+  ) %>%
+  addStarsImage(
+    obj_wetness_target["STR"],
+    colors = palette_function(obj_wetness_target["STR"]),
+    opacity = 0.8,
+    group = paste0(date_value, " STR")
+  ) %>% 
+  #addPolygons(data = AOI_wgs84, color = "red", weight = 2) %>%
+  addLayersControl(
+    baseGroups = c("OpenStreetMap","OMWRGB20VL", "DHMV_II_HILL_25cm"),
+    overlayGroups = c(
+      paste0(date_value, " B11"),
+      paste0(date_value, " NDWI"),
+      paste0(date_value, " NDMI"),
+      paste0(date_value, " NDPI"),
+      paste0(date_value, " STR")
+    ),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
+map
+```
+
+```{r}
+Juss_cl <- obj_classified-1 # convert values form 1-2 to 0-1
+obj_wetness <- c(obj_wetness,Juss_cl)
+obj_wetness <- c(obj_wetness,obj_classified_factor)
+obj_wetness <- c(obj_wetness,obj_classified_wiw)
+obj_wetness <- c(obj_wetness,obj_classified_wiw_factor)
+names(obj_wetness)[14] <- "Juss_cl"
+names(obj_wetness)[15] <- "Juss_cl_fact"
+names(obj_wetness)[16] <- "Wiw_cl"
+names(obj_wetness)[17] <- "Wiw_cl_fact"
+
+
+obj_wetness
+```
+
+## Pipelines
+
+### Tytti's pipeline
+
+-   Bi-weekly temporal aggregation
+
+    #### Monitoring per plot level:
+
+```{r}
+#--------------------------------------------
+# 1. Create a function to process one AOI
+#--------------------------------------------
+process_AOI <- function(obj_wetness, AOI_poly, aoi_name = "AOI") {
+  
+  # Crop to AOI
+  obj_aoi <- obj_wetness[AOI_poly]
+
+  #--------------------------------------------
+  # Temporal aggregation: 2-weekly median
+  #--------------------------------------------
+  time_vals <- st_get_dimension_values(obj_aoi, "t")
+  start <- floor_date(min(time_vals), "month")
+  end   <- ceiling_date(max(time_vals), "month")
+
+  # Generate 2-week breaks (1st and 15th of each month)
+  breaks <- sort(c(seq(start, end, by = "1 month"),
+                   seq(start + days(14), end, by = "1 month")))
+
+  # Aggregate
+  obj_2week <- aggregate(obj_aoi, by = breaks, FUN = median, na.rm = TRUE)
+
+  #--------------------------------------------
+  # Summarize to a table
+  #--------------------------------------------
+  table_2w <- obj_2week[,,,] |>
+    as_tibble() |>
+    group_by(time) |> 
+    summarize(
+      inundation     = mean(Juss_cl, na.rm = TRUE)*100,
+      inundation_Wiw = mean(Wiw_cl, na.rm = TRUE)*100,
+      NDMI = mean(NDMI, na.rm = TRUE),
+      NDWI = mean(NDWI, na.rm = TRUE),
+      NDPI = mean(NDPI, na.rm = TRUE),
+      STR  = mean(STR, na.rm = TRUE),
+      B11  = mean(B11, na.rm = TRUE)
+    )
+  
+  table_2w_plot <- table_2w[!is.na(table_2w$inundation),]
+  
+  #--------------------------------------------
+  # ggplot static plots
+  #--------------------------------------------
+  p1 <- ggplot(table_2w_plot) +
+    aes(x = time, y = inundation) + 
+    ylim(0,100) +
+    geom_line() + geom_point() +
+    labs(title = paste("Inundated area % - parcel ", aoi_name),
+         x = "Date", y = "Inundated area (%)") +
+    theme_minimal()
+  
+  p2 <- ggplot(table_2w_plot) +
+    aes(x = time, y = STR) +
+    geom_line() + geom_point() +
+    labs(title = paste("STR -", aoi_name),
+         x = "Date", y = "STR") +
+    theme_minimal()
+  
+  #--------------------------------------------
+  # Dygraph interactive plots
+  #--------------------------------------------
+  table_2w_xts <- xts(table_2w[,-1], order.by = table_2w$time)
+  table_2w_xts$B11 <- table_2w_xts$B11 / 10000
+  
+  dy1 <- dygraph(table_2w_xts[, c(3:7)], main = paste("Indices evolution - plot ", aoi_name),
+                 ylab = "Mean values (spatial aggregated)",
+                 xlab = "Date and Time") %>%
+    dyOptions(pointShape = "dot",
+              drawGapEdgePoints = TRUE,
+              connectSeparatedPoints = FALSE) %>%
+    dyRangeSelector(dateWindow = c("2020-01-01", "2024-10-13")) %>%
+    dyAxis("x", valueFormatter = 
+             "function(d) { return new Date(d).toLocaleString(); }")
+  
+  dy2 <- dygraph(table_2w_xts[, c(1:2)], main = paste("Inundation evolution - plot ", aoi_name),
+                 ylab = "Mean values (spatial aggregated)",
+                 xlab = "Date and Time") %>%
+    dyOptions(pointShape = "dot",
+              drawGapEdgePoints = TRUE,
+              connectSeparatedPoints = FALSE) %>%
+    dyRangeSelector(dateWindow = c("2020-01-01", "2024-10-13")) %>%
+    dyAxis("x", valueFormatter = 
+             "function(d) { return new Date(d).toLocaleString(); }")
+  
+  #--------------------------------------------
+  # Return everything
+  #--------------------------------------------
+  list(
+    name = aoi_name,
+    #table = table_2w,
+    plots = list(inundation = p1, STR = p2),
+    dygraphs = list(indices = dy1, inundation = dy2)
+  )
+}
+
+#--------------------------------------------
+# 2. Apply function to each AOI polygon
+#--------------------------------------------
+results <- lapply(1:nrow(AOI), function(i) {
+  process_AOI(obj_wetness, AOI[i,], aoi_name = AOI$ID[i])  # or paste0("AOI_", i)
+})
+
+# Example: show first AOI results
+results[[1]]$plots$inundation
+results[[1]]$plots$STR
+results[[1]]$dygraphs$indices
+results[[1]]$dygraphs$inundation
+
+```
+
+The time series is still irregular. We will use linear interpolation for gap filling.
+
+```{r}
+process_AOI_interpolated <- function(obj_wetness, AOI_poly, aoi_name = "AOI",inundation_threshold = 20) {
+  
+  # Crop to AOI
+  obj_aoi <- obj_wetness[AOI_poly]
+
+  #--------------------------------------------
+  # Temporal aggregation: 2-weekly median
+  #--------------------------------------------
+  time_vals <- st_get_dimension_values(obj_aoi, "t")
+  start <- floor_date(min(time_vals), "month")
+  end   <- ceiling_date(max(time_vals), "month")
+
+  # Generate 2-week breaks (1st and 15th of each month)
+  breaks <- sort(c(seq(start, end, by = "1 month"),
+                   seq(start + days(14), end, by = "1 month")))
+
+  # Aggregate
+  obj_2week <- aggregate(obj_aoi, by = breaks, FUN = median, na.rm = TRUE)
+
+  #--------------------------------------------
+  # Summarize to a table
+  #--------------------------------------------
+  table_2w <- obj_2week[,,,] |>
+    as_tibble() |>
+    group_by(time) |> 
+    summarize(
+      inundation     = mean(Juss_cl, na.rm = TRUE)*100,
+      inundation_Wiw = mean(Wiw_cl, na.rm = TRUE)*100,
+      NDMI = mean(NDMI, na.rm = TRUE),
+      NDWI = mean(NDWI, na.rm = TRUE),
+      NDPI = mean(NDPI, na.rm = TRUE),
+      STR  = mean(STR, na.rm = TRUE),
+      B11  = mean(B11, na.rm = TRUE)
+    )
+  
+  # extract 2-weekly time points
+  time_vals2w <- st_get_dimension_values(obj_2week, "time")
+
+  # interpolate NA values along time dimension
+  obj_filled_2w <- st_apply(
+    obj_2week,
+    MARGIN = c("x", "y"),   
+    FUN = function(ts) { # repeat interpolation function over each pixel time series
+      if (all(is.na(ts))) { # keep NA time series as NA outside site polygon
+        return(ts)  
+      }
+      approx( # interpolate missing time points
+        x = as.numeric(time_vals2w),
+        y = ts,
+        xout = as.numeric(time_vals2w),
+        method = "linear",
+        rule = 2
+      )$y
+    },.fname = "time"
+  )
+  # fix the broken time dimension in output
+  obj_filled_2w <- st_set_dimensions(obj_filled_2w, "time", values = time_vals2w)
+  
+  
+  # Plot 2-week time series (gapfilled)
+  # first summarise for site area:
+  table_gf2w <- # Gapfilled 2-weekly table
+    obj_filled_2w[,,,] |>  
+    as_tibble() |>
+    group_by(time) |> 
+    summarize(inundation = mean(Juss_cl, na.rm = TRUE)*100,
+              inundation_Wiw = mean(Wiw_cl, na.rm = TRUE)*100,
+              NDMI = mean(NDMI, na.rm=T), #Ranges from -1 to +1, where the lowest values indicate low vegetation water content, and the highest ones correspond to high water content
+              NDWI = mean(NDWI, na.rm=T), #Over 0.2: water. Below 0: non-water
+              NDPI = mean(NDPI, na.rm=T), # scores above a certain high value, e.g., larger than 0.75, indicates a pond area with good water quality
+              STR = mean(STR, na.rm=T), # Higher values, higher soil moisture content
+              B11 = mean(B11, na.rm=T)) # lower values, higher moisture. 
+  # New column: Flag gapfilled values
+  table_gf2w$gapfilled <- "2w median"
+  table_gf2w$gapfilled[is.na(table_2w$B11)] <- "gapfilled"
+  table_gf2w$gapfilled <- as.factor(table_gf2w$gapfilled)
+  # time format to Date for plotting
+  table_gf2w$date <- as.Date(table_gf2w$time) 
+
+  
+  #--------------------------------------------
+  # ggplot static plots
+  #--------------------------------------------
+  p1 <- ggplot() +
+     ggtitle("2-weekly mean class (Jussila)") +
+     geom_stars(data = obj_filled_2w["Juss_cl"]) +
+     geom_sf(data = AOI_poly, fill = NA, color = "red", linewidth = 1) +
+     facet_wrap(~time,ncol=20) +
+     theme_minimal() +
+     theme(axis.text = element_blank(),          # remove axis tick labels
+     axis.ticks = element_blank(),         # remove tick marks
+     ) +
+     scale_fill_gradientn(
+         name = "Wetness",
+         colors = c("tan", "cyan", "blue"),
+         na.value = "gray",
+         limits = c(0, 1)
+     )
+  
+  p2 <- ggplot(table_gf2w) + #check the dates in table to plot a single year ([65:74,] -> 2018 in this case)
+    aes(x = date, y = inundation) + scale_x_date(date_labels = "%b %y") + 
+    geom_line() + geom_point(aes(colour = gapfilled), size=2) + 
+    scale_color_manual(values = c("gapfilled" = "red", "2w median" = "black"),
+                       name=NULL)+
+    labs(title = "Inundation %",x = "Date", 
+         y = "Inundated area (%)") +
+    ylim(0,100)+
+    theme_minimal()
+
+
+  p3 <- ggplot(table_gf2w) +
+    aes(x = date, y = STR) +  scale_x_date(date_labels = "%b %y") + 
+    geom_line() + geom_point(aes(colour = gapfilled), size=2) +
+    scale_color_manual(values = c("gapfilled" = "red", "2w median" = "black"),
+                       name=NULL)+
+    labs(title = "STR", x = "Date", 
+         y = "STR") + 
+    #ylim(1,5)+ # adjust if needed
+    theme_minimal()
+
+  p4 <- ggplot(table_gf2w) +
+    aes(x = date, y = NDMI) +  scale_x_date(date_labels = "%b %y") + 
+    geom_line() + geom_point(aes(colour = gapfilled), size=2) +
+    scale_color_manual(values = c("gapfilled" = "red", "2w median" = "black"),
+                       name=NULL)+
+    labs(title = "NDMI", x = "Date", 
+       y = "NDMI") + 
+    #ylim(-0.1, 0.55)+ # adjust if needed
+    theme_minimal()
+
+  p5 <- ggplot(table_gf2w) +
+    aes(x = date, y = -B11) +  scale_x_date(date_labels = "%b %y") + 
+    geom_line() + geom_point(aes(colour = gapfilled), size=2) +
+    scale_color_manual(values = c("gapfilled" = "red", "2w median" = "black"),
+                       name=NULL)+
+    labs(title = "SWIR",x = "Date",
+       y = "B11 (neg)") + # plot SWIR as negation for comparability (low SWIR, high moisture. Opposite to other indicators)
+  #ylim(-2500, -800)+ # adjust if needed
+    theme_minimal()
+  
+  #--------------------------------------------
+  # Dygraph interactive plots
+  #--------------------------------------------
+  table_2w_inter_xts <- xts(table_gf2w[,-c(1,9,10)], order.by = table_2w$time)
+  table_2w_inter_xts$B11 <- table_2w_inter_xts$B11 / 10000
+  
+  
+  # Convert index to year
+  df <- data.frame(
+    date = index(table_2w_inter_xts),
+    inundation = table_2w_inter_xts$inundation,
+    inundation_wiw = table_2w_inter_xts$inundation_Wiw
+  )
+  
+  df$year <- year(df$date)
+  
+  # --- Updated function to get multiple inundation periods ---
+  get_inundation_periods <- function(x, dates, inundation_threshold) {
+    flooded <- x > inundation_threshold
+    if (!any(flooded)) {
+      return(data.frame(start = as.POSIXct(NA), end = as.POSIXct(NA)))
+    }
+  
+    # Identify transitions (changes between flooded / not flooded)
+    change <- c(TRUE, diff(flooded) != 0)
+    groups <- cumsum(change)
+  
+    # Split into groups
+    flood_periods <- split(dates, groups)
+  
+    # Keep only flooded groups
+    flooded_groups <- which(tapply(flooded, groups, any))
+    flood_periods <- flood_periods[flooded_groups]
+  
+    # Get start and end of each inundation period as POSIXct
+    period_df <- data.frame(
+      start = as.POSIXct(sapply(flood_periods, min)),
+      end   = as.POSIXct(sapply(flood_periods, max))
+    )
+  
+    return(period_df)
+  }
+  
+  # --- Apply per year for both inundation types ---
+  inundation_periods <- df %>%
+    group_by(year) %>%
+    do({
+      # Get inundation periods for both series
+      p1 <- get_inundation_periods(.$inundation, .$date, inundation_threshold)
+      p2 <- get_inundation_periods(.$inundation_Wiw, .$date, inundation_threshold)
+  
+      # Label them so we can distinguish later
+      p1$type <- "inundation"
+      p2$type <- "inundation_wiw"
+  
+      # Combine and add year
+      bind_rows(p1, p2) %>%
+        mutate(year = unique(.$year))
+    }) %>%
+    ungroup() %>%
+    dplyr::select(year, type, start, end)
+  
+  # --- Optional: Convert to datetime explicitly ---
+  inundation_periods <- inundation_periods %>%
+    mutate(
+      start = as.Date(start),
+      end = as.Date(end)
+    )
+  
+
+  
+  dy1 <- dygraph(table_2w_inter_xts[, -c(1:2)], main = paste("Indices evolution - plot ", aoi_name),
+                 ylab = "Mean values (spatial aggregated)",
+                 xlab = "Date and Time") %>%
+    dyOptions(pointShape = "dot",
+              drawGapEdgePoints = TRUE,
+              connectSeparatedPoints = FALSE) %>%
+    dyRangeSelector(dateWindow = c("2020-01-01", "2024-10-13")) %>%
+    dyAxis("x", valueFormatter = 
+             "function(d) { return new Date(d).toLocaleString(); }")
+  
+  dy2 <- dygraph(table_2w_inter_xts[, c(1:2)], main = paste("Inundation evolution - plot ", aoi_name),
+                 ylab = "Mean values (spatial aggregated)",
+                 xlab = "Date and Time") %>%
+    dyOptions(pointShape = "dot",
+              drawGapEdgePoints = TRUE,
+              connectSeparatedPoints = FALSE) %>%
+    dyRangeSelector(dateWindow = c("2020-01-01", "2024-10-13")) %>%
+    dyAxis("x", valueFormatter = 
+             "function(d) { return new Date(d).toLocaleString(); }")
+  
+  #--------------------------------------------
+  # Return everything
+  #--------------------------------------------
+  list(
+    name = aoi_name,
+    #table = table_gf2w,
+    table = inundation_periods,
+    plots = list(inundation_raster = p1, inundation_graph = p2, STR = p3, NDMI = p4, B11 = p5),
+    dygraphs = list(indices = dy1, inundation = dy2)
+  )
+}
+
+
+#--------------------------------------------
+# 2. Apply function to each AOI polygon
+#--------------------------------------------
+results2 <- lapply(1:nrow(AOI), function(i) {
+  process_AOI_interpolated(obj_wetness, AOI[i,], aoi_name = AOI$ID[i],inundation_threshold=20)  # or paste0("AOI_", i)
+})
+
+# Example: show first AOI results
+results2[[1]]$plots$inundation_raster
+results2[[1]]$plots$inundation_graph
+results2[[1]]$plots$STR
+results2[[1]]$plots$NDMI
+results2[[1]]$plots$B11
+
+
+results2[[1]]$dygraphs$indices
+results2[[1]]$dygraphs$inundation
+results2[[1]]$table
+```
+
+#### Plotting yearly indicators for site area:
+
+```{r}
+# Using 2-weekly gapfilled stars object to calculate statistics
+#--------------------------------------------
+# Temporal aggregation: 2-weekly median
+#--------------------------------------------
+time_vals <- st_get_dimension_values(obj_wetness, "t")
+start <- floor_date(min(time_vals), "month")
+end   <- ceiling_date(max(time_vals), "month")
+
+# Generate 2-week breaks (1st and 15th of each month)
+breaks <- sort(c(seq(start, end, by = "1 month"),
+                 seq(start + days(14), end, by = "1 month")))
+
+# Aggregate
+obj_2week <- aggregate(obj_wetness, by = breaks, FUN = median, na.rm = TRUE)
+
+table_2w <- obj_2week[,,,] |>
+  as_tibble() |>
+  group_by(time) |> 
+  summarize(
+    inundation     = mean(Juss_cl, na.rm = TRUE)*100,
+    inundation_Wiw = mean(Wiw_cl, na.rm = TRUE)*100,
+    NDMI = mean(NDMI, na.rm = TRUE),
+    NDWI = mean(NDWI, na.rm = TRUE),
+    NDPI = mean(NDPI, na.rm = TRUE),
+    STR  = mean(STR, na.rm = TRUE),
+    B11  = mean(B11, na.rm = TRUE)
+  )
+
+#--------------------------------------------
+# Summarize to a table
+#--------------------------------------------
+# extract 2-weekly time points
+time_vals2w <- st_get_dimension_values(obj_2week, "time")
+
+# interpolate NA values along time dimension
+obj_filled_2w <- st_apply(
+  obj_2week,
+  MARGIN = c("x", "y"),   
+  FUN = function(ts) { # repeat interpolation function over each pixel time series
+    if (all(is.na(ts))) { # keep NA time series as NA outside site polygon
+      return(ts)  
+    }
+    approx( # interpolate missing time points
+      x = as.numeric(time_vals2w),
+      y = ts,
+      xout = as.numeric(time_vals2w),
+      method = "linear",
+      rule = 2
+    )$y
+  },.fname = "time"
+)
+
+# fix the broken time dimension in output
+obj_filled_2w <- st_set_dimensions(obj_filled_2w, "time", values = time_vals2w)
+  
+  
+# Plot 2-week time series (gapfilled)
+# first summarise for site area:
+table_gf2w <- # Gapfilled 2-weekly table
+  obj_filled_2w[,,,] |>  
+  as_tibble() |>
+  group_by(time) |> 
+  summarize(inundation = mean(Juss_cl, na.rm = TRUE)*100,
+            inundation_Wiw = mean(Wiw_cl, na.rm = TRUE)*100,
+            NDMI = mean(NDMI, na.rm=T), #Ranges from -1 to +1, where the lowest values indicate low vegetation water content, and the highest ones correspond to high water content
+            NDWI = mean(NDWI, na.rm=T), #Over 0.2: water. Below 0: non-water
+            NDPI = mean(NDPI, na.rm=T), # scores above a certain high value, e.g., larger than 0.75, indicates a pond area with good water quality
+            STR = mean(STR, na.rm=T), # Higher values, higher soil moisture content
+            B11 = mean(B11, na.rm=T)) # lower values, higher moisture. 
+# New column: Flag gapfilled values
+table_gf2w$gapfilled <- "2w median"
+table_gf2w$gapfilled[is.na(table_2w$B11)] <- "gapfilled"
+table_gf2w$gapfilled <- as.factor(table_gf2w$gapfilled)
+# time format to Date for plotting
+table_gf2w$date <- as.Date(table_gf2w$time) 
+
+
+# aggregate stars into yearly layers
+## Mean (for each pixel?)
+obj_y_mean <- aggregate(obj_filled_2w, by = "year", 
+                        FUN=mean, na.rm=T) 
+## Min (for each pixel?)
+obj_y_min <- aggregate(obj_filled_2w, by = "year", 
+                       FUN=min, na.rm=T) # returns Inf for NA areas
+obj_y_min[obj_y_min == Inf] <- NA # convert Inf back to NA
+## Max (for each pixel?)
+obj_y_max <- aggregate(obj_filled_2w, by = "year", 
+                       FUN=max, na.rm=T) # returns -Inf for NA areas
+obj_y_max[obj_y_max == -Inf] <- NA # convert -Inf back to NA
+
+
+## Plot yearly raster maps
+
+# SWIR [7], inundation Jussila [14], inundation Wiw [16], NDMI = [10], NDWI = [11], NDPI = [12], STR = [13]
+
+# Inundation (Jussila). Inundated % of time
+plot(obj_y_mean[14], col = viridis(100, option = "D", direction=-1),
+     breaks = seq(0, 1, length.out = 101), main = "Relative frequency of inundated pixels by Jussila model")  
+
+plot(obj_y_mean[14]*26, col = viridis(100, option = "D", direction=-1),
+     breaks = seq(0, 26, length.out = 101), main = "Number of 2-weekly inundation per year by Jussila model")  
+
+# Inundation (Wiw). Inundated % of time
+plot(obj_y_mean[16], col = viridis(100, option = "D", direction=-1),
+     breaks = seq(0, 1, length.out = 101), main = "Relative frequency of inundated pixels by Wiw model") 
+
+plot(obj_y_mean[16]*26, col = viridis(100, option = "D", direction=-1),
+     breaks = seq(0, 26, length.out = 101), main = "Number of 2-weekly inundation per year by Wiw model") 
+
+# STR
+plot(obj_y_mean[13], col = viridis(100, option = "D", direction=-1),
+     breaks = seq(0, 40, length.out = 101))  
+# NDMI
+plot(obj_y_mean[10], col = viridis(100, option = "D", direction= -1),
+     breaks = seq(min(obj_y_mean[[10]], na.rm=T), 
+                  max(obj_y_mean[[10]], na.rm=T), length.out = 101)) 
+```
+
+```{r}
+# Extract the layer
+x <- obj_y_mean[14]
+
+# Classify pixel values
+vals <- x[[1]]
+
+classified_vals <- ifelse(
+  is.na(vals), NA,
+  ifelse(vals == 0, "permanently dry",
+         ifelse(vals == 1, "permanently inundated",
+                "seasonally inundated"))
+)
+
+# Rebuild a stars object, preserving geometry
+classified <- st_as_stars(classified_vals)
+st_dimensions(classified) <- st_dimensions(x)
+st_crs(classified) <- st_crs(x)
+
+# Convert to factor (only with existing levels)
+present_classes <- sort(unique(na.omit(as.vector(classified_vals))))
+classified[[1]] <- factor(classified[[1]], levels = present_classes)
+
+# Define full color scheme, but only use what’s needed
+full_colors <- c(
+  "permanently dry" = "tan",
+  "seasonally inundated" = "lightblue",
+  "permanently inundated" = "blue4"
+)
+class_colors <- full_colors[present_classes]
+
+ggplot() +
+  geom_stars(data = classified, aes(x = x, y = y)) +
+  scale_fill_manual(values = class_colors, name = "Inundation Class") +
+  geom_sf(data = AOI, fill = NA, color = "red", size = 0.7) +
+  coord_sf() +
+  facet_wrap(~ time, ncol = 3) +
+  labs(
+    title = "Inundation Frequency Classification",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    panel.border = element_rect(color = "grey40", fill = NA),
+    strip.text = element_text(face = "bold")
+  )
+
+```
+
+```{r}
+# MEAN - summarise values for site area
+table_y_mean <- 
+  obj_y_mean[,,,] |> 
+  as_tibble() |>
+  group_by(time) |> 
+  summarize(inundation = mean(Juss_cl, na.rm = TRUE)*100,
+            inundation_Wiw = mean(Wiw_cl, na.rm = TRUE)*100,
+            NDMI = mean(NDMI, na.rm=T), #Ranges from -1 to +1, where the lowest values indicate low vegetation water content, and the highest ones correspond to high water content
+            NDWI = mean(NDWI, na.rm=T), #Over 0.2: water. Below 0: non-water
+            NDPI = mean(NDPI, na.rm=T), # scores above a certain high value, e.g., larger than 0.75, indicates a pond area with good water quality
+            STR = mean(STR, na.rm=T), # Higher values, higher soil moisture content
+            B11 = mean(B11, na.rm=T)) # lower values, higher moisture. 
+
+#summarise min for sites (site mean at minimum wet situation)
+table_y_min <- 
+  obj_y_min[,,,] |> 
+  as_tibble() |>
+  group_by(time) |> 
+  summarize(inundation = mean(Juss_cl, na.rm = TRUE)*100,
+            inundation_Wiw = mean(Wiw_cl, na.rm = TRUE)*100,
+            NDMI = mean(NDMI, na.rm=T), #Ranges from -1 to +1, where the lowest values indicate low vegetation water content, and the highest ones correspond to high water content
+            NDWI = mean(NDWI, na.rm=T), #Over 0.2: water. Below 0: non-water
+            NDPI = mean(NDPI, na.rm=T), # scores above a certain high value, e.g., larger than 0.75, indicates a pond area with good water quality
+            STR = mean(STR, na.rm=T), # Higher values, higher soil moisture content
+            B11 = mean(B11, na.rm=T)) # lower values, higher moisture. 
+# for SWIR, wetness minimum is SWIR max value. 
+
+#summarise max for sites (site mean at minimum wet situation)
+table_y_max <- 
+  obj_y_max[,,,] |>  
+  as_tibble() |>
+  group_by(time) |> 
+  summarize(inundation = mean(Juss_cl, na.rm = TRUE)*100,
+            inundation_Wiw = mean(Wiw_cl, na.rm = TRUE)*100,
+            NDMI = mean(NDMI, na.rm=T), #Ranges from -1 to +1, where the lowest values indicate low vegetation water content, and the highest ones correspond to high water content
+            NDWI = mean(NDWI, na.rm=T), #Over 0.2: water. Below 0: non-water
+            NDPI = mean(NDPI, na.rm=T), # scores above a certain high value, e.g., larger than 0.75, indicates a pond area with good water quality
+            STR = mean(STR, na.rm=T), # Higher values, higher soil moisture content
+            B11 = mean(B11, na.rm=T)) # lower values, higher moisture.
+# for SWIR, wetness maximum is SWIR min value.
+
+
+# plot all yearly stats in one graph: Mean and shaded range between min-max
+# STR
+ggplot() +
+  #ylim(1,5)+ # adjust if needed
+  #geom_line(data= table_gf2w, aes(x = time - months(6), y = STR), color="grey") + # full time series to background?
+  geom_line(data= table_y_mean, aes(x = time, y = STR)) + 
+  geom_point(data= table_y_mean, aes(x = time, y = STR)) + 
+  geom_ribbon(aes(x = table_y_mean$time, 
+                  ymin = table_y_min$STR, 
+                  ymax = table_y_max$STR),fill="#1f9e89", alpha= 0.2)+ 
+  labs(title = "STR moisture mean and range (min, max)",
+       x = "Year",
+       y = "STR") +
+  theme_minimal() + theme(legend.position="none")
+
+# NDMI
+ggplot() +
+  #ylim(-0.1,0.5)+ # adjust if needed
+  #geom_line(data= table_gf2w, aes(x = time - months(6), y = NDMI), color="grey") + # full time series to background?
+  geom_line(data= table_y_mean, aes(x = time, y = NDMI)) + 
+  geom_point(data= table_y_mean, aes(x = time, y = NDMI)) + 
+  geom_ribbon(aes(x = table_y_mean$time, 
+                  ymin = table_y_min$NDMI, 
+                  ymax = table_y_max$NDMI),fill="#1f9e89", alpha= 0.2)+ 
+  labs(title = "NDMI moisture mean and range (min, max)",
+       x = "Year",
+       y = "NDMI") +
+  theme_minimal() + theme(legend.position="none")
+
+
+
+# plot percentage of permanently and seasonally wet area. 
+# Jussila model
+ggplot() +
+  ylim(0,100)+ 
+  geom_ribbon(aes(x = table_y_mean$time, # permanent
+                  ymin = 0, 
+                  ymax = table_y_min$inundation),fill="#1f9e89", alpha= 0.6)+ 
+  geom_ribbon(aes(x = table_y_mean$time, # seasonal
+                  ymin = table_y_min$inundation, 
+                  ymax = table_y_max$inundation),fill="#6ece58", alpha= 0.3)+  #Temporarily inundated
+  geom_ribbon(aes(x = table_y_mean$time, # never
+                  ymin = table_y_max$inundation, 
+                  ymax = 100),fill="#fde725", alpha= 0.2)+ # Never inundated
+  labs(title = "Permanently and seasonally inundated area (Jussila model)",
+       x = "Year",
+       y = "Inundated area %") +
+  theme_minimal() + theme(legend.position="none") # + scale_x_date(date_breaks = "1 year")
+
+
+# Lefebvre Wiw model
+ggplot() +
+  ylim(0,100)+ 
+  geom_ribbon(aes(x = table_y_mean$time, # permanent
+                  ymin = 0, 
+                  ymax = table_y_min$inundation_Wiw),fill="#1f9e89", alpha= 0.6)+ 
+  geom_ribbon(aes(x = table_y_mean$time, # seasonal
+                  ymin = table_y_min$inundation_Wiw, 
+                  ymax = table_y_max$inundation_Wiw),fill="#6ece58", alpha= 0.3)+ 
+  geom_ribbon(aes(x = table_y_mean$time, # never
+                  ymin = table_y_max$inundation_Wiw, 
+                  ymax = 100),fill="#fde725", alpha= 0.2)+ 
+  labs(title = "Permanently and seasonally inundated area (Lefebvre Wiw)",
+       x = "Year",
+       y = "Inundated area %") +
+  theme_minimal() + theme(legend.position="none") # + scale_x_date(date_breaks = "1 year")
+```
+
+### Sebastiaan's pipeline (modified Tytti's pipeline)
+
+1.  Uncertainty evaluation.
+
+```{r}
+# Assuming your object is named obj_classified and has a time dimension "t"
+st <- obj_classified[AOI]
+
+# 1. Extract time dimension
+t_existing <- st_get_dimension_values(st, "t")
+
+# 2. Create complete 5-day sequence
+t_full <- seq(min(t_existing), max(t_existing), by = "5 days")
+
+# 3. Find missing dates
+t_missing <- setdiff(t_full, t_existing)
+
+# 4. Proceed only if there are missing timestamps
+if (length(t_missing) > 0) {
+  
+  # --- Template Creation: Clean Reset of Time Dimension ---
+  
+  # Take the first time slice, retaining all 4 dimensions (x, y, band, t)
+  template <- st[,,,1, drop = FALSE]
+  
+  # Replace data with NA
+  template[[1]][] <- NA
+  
+  # Define a dummy date placeholder, ensuring it's a POSIXct object
+  dummy_date <- min(t_existing) - as.difftime(1, units = "days")
+  dummy_date <- as.POSIXct(dummy_date)
+  
+  #Reset the time dimension of the template using st_set_dimensions.
+  # This overwrites the existing dimension value and ensures the internal structure 
+  # of the dimension object remains valid (e.g., handles "intervals" properties).
+  template <- st_set_dimensions(
+    template, 
+    "t", 
+    values = dummy_date, 
+    # Also reset the point flag to FALSE for consistency if using intervals
+    point = FALSE 
+  )
+
+  # --- Creating and Assigning Missing Layers ---
+  
+  # Create a list of new layers for missing timestamps
+  missing_layers <- lapply(t_missing, function(tt) {
+    new_layer <- template
+    
+    # Set the correct missing date 'tt' (overwriting the dummy_date)
+    # The crucial fix from previous steps: assign the result back
+    new_layer <- st_set_dimensions(new_layer, "t", values = tt)
+    
+    return(new_layer)
+  })
+  
+  # --- Combining Layers ---
+  
+  # Prepare the full list of objects to combine
+  all_layers_to_combine <- c(list(st), missing_layers)
+  
+  # Combine all layers along the time dimension
+  # This uses the c.stars method correctly by unpacking the list
+  st_full <- do.call(c, c(all_layers_to_combine, along = "t"))
+  
+  # --- Final Sort (To Interleave the NA layers and resolve stacking) ---
+  
+  # Sort the time dimension chronologically. 
+  t_values_full <- st_get_dimension_values(st_full, "t")
+  sorted_indices <- order(t_values_full)
+  
+  # Reorder the object data by subsetting with the sorted time indices
+  st_full <- st_full[,,, sorted_indices, drop = FALSE]
+  
+  # Ensure the dimension values are also updated to the sorted order
+  st_full <- st_set_dimensions(
+    st_full,
+    "t",
+    values = sort(t_values_full)
+  )
+  
+} else {
+  st_full <- st
+}
+
+# Result
+st_full
+
+st_ones_alt <- st_full
+st_ones_alt[[1]][!is.na(st_ones_alt[[1]])] <- 1
+st_ones_alt[[1]][is.na(st_ones_alt[[1]])] <- NA # Ensure NA remains NA (as the first method does)
+
+# Aggregate st_full by month, calculating the mean over each month.
+# FUN = mean calculates the sum and divides by the number of non-NA dates in the month.
+st_monthly_sum <- aggregate(
+  st_ones_alt,
+  by = "months",
+  FUN = sum,
+  na.rm = TRUE
+)
+
+ggplot() +
+  ggtitle("sum of valid pixels per month") + 
+  geom_stars(data = st_monthly_sum) +
+  geom_sf(data = AOI, fill = NA, color = "red", linewidth = 1) +
+  facet_wrap(~time,ncol=12) +
+  theme_minimal() +
+  theme(axis.text = element_blank(),          # remove axis tick labels
+    axis.ticks = element_blank(),         # remove tick marks
+    )+
+     scale_fill_gradientn(
+         name = "X",
+         colors = c("white", "purple","darkblue"),
+         na.value = "gray",
+         #limits = c(0, 1)
+     )
+```
+
+2.  Spatial interpolation (3x3 kernel, majority voting)
+
+```{r}
+# --- STEP 1: Extract Spatial Template ---
+# The function needs the extent and CRS to turn the plain array data back into a SpatRaster.
+# Slice the first time step and convert it to a SpatRaster to get the template metadata.
+# template raster for extent and CRS
+r_template <- rast(slice(obj_classified, "t", 1))
+template_crs <- crs(r_template, proj=TRUE)
+template_extent <- ext(r_template)
+
+# function to process a single slice
+focal_na_fill_modal <- function(x_slice) {
+  r_slice <- rast(t(x_slice))           # transpose first
+  ext(r_slice) <- template_extent
+  crs(r_slice) <- template_crs
+  
+  r_focal <- focal(
+    r_slice,
+    w = 3,
+    fun = modal,
+    na.policy = "only",
+    na.rm = TRUE
+  )
+  
+  as.matrix(r_focal) |> t()             # transpose back
+}
+
+# Apply across time
+obj_focal_filled <- st_apply(obj_classified, MARGIN = "t", FUN = focal_na_fill_modal) 
+
+st_dimensions(obj_focal_filled)
+st_dimensions(obj_classified)
+
+obj_focal_filled <-
+  obj_focal_filled |>
+  st_crop(AOI)
+
+plot(obj_classified)
+plot(obj_focal_filled)
+
+```
+
+3.  Temporal aggregation (median value per month).
+
+```{r}
+# Extract classes into a tibble
+obj_focal_filled <- obj_focal_filled - 1 # convert 1-2 to 0-1
+classified_df_filled <- as_tibble(obj_focal_filled[AOI])
+
+# Add a month column
+classified_df_filled <- classified_df_filled %>%
+  mutate(month = floor_date(t, "month"))
+
+
+classified_df_filled_monthly_median <- classified_df_filled %>%
+  group_by(month, x, y) %>%      # group by pixel location + month
+  summarize(Class = median(X, na.rm = TRUE), .groups = "drop")
+
+# Convert -Inf values to NA
+classified_df_filled_monthly_median[classified_df_filled_monthly_median == -Inf] <- NA
+
+# Convert back to stars
+classified_filled_monthly_median <- st_as_stars(classified_df_filled_monthly_median, dims = c("x", "y", "month"))
+plot(classified_filled_monthly_median)
+```
+
+4.  Temporal interpolation (linear)
+
+#### Monitoring per plot level:
+
+```{r}
+# Existing data
+existing_data <- classified_filled_monthly_median[[1]]
+current_months <- st_get_dimension_values(classified_filled_monthly_median, "month")
+
+# Create full monthly sequence
+full_months <- seq(from = min(current_months), to = max(current_months), by = "month")
+
+# Prepare new array with NAs for missing months
+new_dims <- c(dim(classified_filled_monthly_median)[1:2], length(full_months))
+new_array <- array(NA, dim = new_dims)
+
+# Map existing data into correct positions
+month_idx <- match(current_months, full_months)
+new_array[,,month_idx] <- existing_data
+
+# Start from the original dimensions object
+dims <- st_dimensions(classified_filled_monthly_median)
+
+# Update the month dimension's values
+dims$month$values <- full_months
+
+# Assign new array to the stars object
+classified_filled_monthly_median <- st_as_stars(list(data = new_array))
+
+# Attach updated dimensions
+st_dimensions(classified_filled_monthly_median) <- dims
+
+plot(classified_filled_monthly_median)
+st_dimensions(classified_filled_monthly_median)
+st_crs(classified_filled_monthly_median) <- st_crs(AOI)
+
+process_AOI_month_gapfilled <- function(classified_filled_monthly_median,AOI_poly,aoi_name="AOI", inundation_threshold = 20){
+  classified_filled_monthly_median_aoi <- classified_filled_monthly_median[AOI_poly]
+  
+  # Summarise per month
+  table_month_aoi <-
+    classified_filled_monthly_median_aoi[,,,] |>
+    as_tibble() |>
+    group_by(month) |>
+    summarize(inundation = mean(data, na.rm = TRUE)*100)
+  
+  table_month_aoi_plotting <- table_month_aoi[!is.na(table_month_aoi$inundation),] # drop NAs for plotting
+  
+  p1 <- ggplot(table_month_aoi_plotting) + ## check the dates in table to plot a specific single year
+    aes(x = month, y = inundation) +
+    ylim(0,100) +
+    geom_line() + geom_point() +
+    labs(title = "Inundated area %",
+         x = "Date",
+         y = "Inundated area (%)") +
+    theme_minimal()
+  
+  # extract time points per month
+  time_vals1m <- st_get_dimension_values(classified_filled_monthly_median_aoi, "month")
+  time_vals <- 1:dim(classified_filled_monthly_median_aoi)[3]  # or 1:length(time dimension)
+  obj_filled_1m_aoi <- st_apply(
+    classified_filled_monthly_median_aoi,
+    MARGIN = c("x", "y"),   
+    FUN = function(ts) {
+      if (all(is.na(ts))) {
+        return(ts)
+      }
+      approx(
+        x = seq_along(ts),  # numeric indices of time points
+        y = ts,
+        xout = seq_along(ts),  # interpolate at same time points
+        method = "linear",
+        rule = 2
+      )$y
+    },
+    .fname = "month"
+  )
+  
+  # fix the broken time dimension in output
+  obj_filled_1month_aoi <- st_set_dimensions(obj_filled_1m_aoi, "month", values = time_vals1m)
+  st_dimensions(classified_filled_monthly_median_aoi)
+  st_dimensions(obj_filled_1month_aoi)
+
+  p2 <- ggplot() +
+       ggtitle("Per month mean class (Jussila)") +
+       geom_stars(data = obj_filled_1month_aoi["data"]) +
+       geom_sf(data = AOI_poly, fill = NA, color = "red", linewidth = 1) +
+       facet_wrap(~month,ncol=12) +
+       theme_minimal() +
+       theme(axis.text = element_blank(),          # remove axis tick labels
+       axis.ticks = element_blank(),         # remove tick marks
+       ) +
+       scale_fill_gradientn(
+           name = "Wetness",
+           colors = c("tan", "cyan", "blue"),
+           na.value = "gray",
+           limits = c(0, 1)
+       )
+    
+  # Plot time series per month (gapfilled)
+  # first summarise for site area:
+  table_gf1m_aoi <- # Gapfilled table per month
+    obj_filled_1month_aoi[,,,] |>  
+    as_tibble() |>
+    group_by(month) |> 
+    summarize(inundation = mean(data, na.rm = TRUE)*100)
+  
+  # New column: Flag gapfilled values
+  table_gf1m_aoi$gapfilled <- "monthly median"
+  table_gf1m_aoi$gapfilled[is.na(table_month_aoi$inundation)] <- "gapfilled"
+  table_gf1m_aoi$gapfilled <- as.factor(table_gf1m_aoi$gapfilled)
+  # time format to Date for plotting
+  table_gf1m_aoi$date <- as.Date(table_gf1m_aoi$month) 
+  
+  
+  p3 <- ggplot(table_gf1m_aoi) + #check the dates in table to plot a single year ([65:74,] -> 2018 in this case)
+    aes(x = date, y = inundation) + scale_x_date(date_labels = "%b %y") + 
+    geom_line() + geom_point(aes(colour = gapfilled), size=2) + 
+    scale_color_manual(values = c("gapfilled" = "red", "monthly median" = "black"), name=NULL)+
+    labs(title = "Inundation %",x = "Date", 
+         y = "Inundated area (%)") +
+    ylim(0,100)+
+    theme_minimal()
+  
+   table_gf1m_aoi$month <- as.POSIXct(table_gf1m_aoi$month)
+  
+   table_gf1m_aoi_xts <- xts(table_gf1m_aoi[,2], order.by = table_gf1m_aoi$month)
+   
+   # Convert index to year
+    df <- data.frame(
+      date = index(table_gf1m_aoi_xts),
+      inundation = table_gf1m_aoi_xts$inundation
+    )
+    
+    df$year <- year(df$date)
+    
+    # --- Apply per year for both inundation types ---
+    inundation_periods <- df %>%
+      group_by(year) %>%
+      do({
+        # Get inundation periods for both series
+        p <- get_inundation_periods(.$inundation, .$date, inundation_threshold)
+
+  
+        # Label them so we can distinguish later
+        p$type <- "inundation"
+
+    
+        # Combine and add year
+        bind_rows(p) %>%
+          mutate(year = unique(.$year))
+      }) %>%
+      ungroup() %>%
+      dplyr::select(year, type, start, end)
+    
+    # --- Optional: Convert to datetime explicitly ---
+    inundation_periods <- inundation_periods %>%
+      mutate(
+        start = as.Date(start),
+        end = as.Date(end)
+      )
+     
+  
+  
+  
+    dy1 <- dygraph(table_gf1m_aoi_xts, main = paste("Indices evolution -", aoi_name),
+                 ylab = "Mean values (spatial aggregated)",
+                 xlab = "Date and Time") %>%
+    dyOptions(pointShape = "dot",
+              drawGapEdgePoints = TRUE,
+              connectSeparatedPoints = FALSE) %>%
+    dyRangeSelector(dateWindow = c("2020-01-01", "2025-10-01")) %>%
+    dyAxis("x", valueFormatter = 
+             "function(d) { return new Date(d).toLocaleString(); }")
+  
+    list(
+    name = aoi_name,
+    #table = table_month_aoi,
+    table = inundation_periods,
+    plots = list(inundation = p1, inundation_raster = p2, inudation_inter = p3),
+    dygraphs = list(inundation = dy1))
+  
+}
+
+results_month_gapfilled <- lapply(1:nrow(AOI), function(i) {
+  process_AOI_month_gapfilled(classified_filled_monthly_median, AOI[i,], aoi_name = AOI$ID[i], inundation_threshold = 20)  # or paste0("AOI_", i)
+})
+
+results_month_gapfilled[[1]]$plots$inundation
+results_month_gapfilled[[1]]$plots$inundation_raster
+results_month_gapfilled[[1]]$plots$inudation_inter
+results_month_gapfilled[[1]]$dygraphs$inundation
+results_month_gapfilled[[1]]$table
+
+
+```
+
+#### Plotting yearly indicators:
+
+```{r}
+# Summarise per month
+table_month <-
+  classified_filled_monthly_median[,,,] |>
+  as_tibble() |>
+  group_by(month) |>
+  summarize(inundation = mean(data, na.rm = TRUE)*100)
+  
+
+# extract time points per month
+time_vals1m <- st_get_dimension_values(classified_filled_monthly_median, "month")
+time_vals <- 1:dim(classified_filled_monthly_median)[3]  # or 1:length(time dimension)
+
+obj_filled_1m <- st_apply(
+  classified_filled_monthly_median,
+  MARGIN = c("x", "y"),   
+  FUN = function(ts) {
+    if (all(is.na(ts))) {
+      return(ts)
+    }
+    approx(
+      x = seq_along(ts),  # numeric indices of time points
+      y = ts,
+      xout = seq_along(ts),  # interpolate at same time points
+      method = "linear",
+      rule = 2
+    )$y
+  },
+  .fname = "month"
+)
+
+# fix the broken time dimension in output
+obj_filled_1month <- st_set_dimensions(obj_filled_1m, "month", values = time_vals1m)
+st_dimensions(classified_filled_monthly_median)
+st_dimensions(obj_filled_1month)
+
+# Using per month gapfilled stars object to calculate statistics
+
+# aggregate stars into yearly layers
+## Mean (for each pixel?)
+obj_y_mean2 <- aggregate(obj_filled_1month, by = "year", 
+                        FUN=mean, na.rm=T) 
+
+## Min (for each pixel?)
+obj_y_min2 <- aggregate(obj_filled_1month, by = "year", 
+                       FUN=min, na.rm=T) # returns Inf for NA areas
+obj_y_min2[obj_y_min2 == Inf] <- NA # convert Inf back to NA
+
+## Max (for each pixel?)
+obj_y_max2 <- aggregate(obj_filled_1month, by = "year", 
+                       FUN=max, na.rm=T) # returns -Inf for NA areas
+obj_y_max2[obj_y_max2 == -Inf] <- NA # convert -Inf back to NA
+
+
+## Plot yearly raster maps
+# Inundation (Jussila). Inundated % of time
+plot(obj_y_mean2[1], col = viridis(100, option = "D", direction=-1),
+     breaks = seq(0, 1, length.out = 101), main = "Relative frequency of inundated pixels by Jussila model")
+
+plot(obj_y_mean2[1]*12, col = viridis(100, option = "D", direction=-1),
+     breaks = seq(0, 12, length.out = 101), main = "Number of inundated months per year by Jussila model")
+
+plot(obj_y_min2[1], col = viridis(100, option = "D", direction=-1),
+     breaks = seq(0, 1, length.out = 101))  
+
+plot(obj_y_max2[1], col = viridis(100, option = "D", direction=-1),
+     breaks = seq(0, 1, length.out = 101))  
+
+# MEAN - summarise values for site area
+table_y_mean2 <- 
+  obj_y_mean2[,,,] |> 
+  as_tibble() |>
+  group_by(time) |> 
+  summarize(inundation = mean(data, na.rm = TRUE)*100)
+
+#summarise min for sites (site mean at minimum wet situation)
+table_y_min2 <- 
+  obj_y_min2[,,,] |> 
+  as_tibble() |>
+  group_by(time) |> 
+  summarize(inundation = mean(data, na.rm = TRUE)*100)
+
+#summarise max for sites (site mean at minimum wet situation)
+table_y_max2 <- 
+  obj_y_max2[,,,] |>  
+  as_tibble() |>
+  group_by(time) |> 
+  summarize(inundation = mean(data, na.rm = TRUE)*100)
+
+
+# plot percentage of permanently and seasonally wet area. 
+# Jussila model
+ggplot() +
+  ylim(0,100)+ 
+  geom_ribbon(aes(x = table_y_mean2$time, # permanent
+                  ymin = 0, 
+                  ymax = table_y_min2$inundation),fill="#1f9e89", alpha= 0.6)+ 
+  geom_ribbon(aes(x = table_y_mean2$time, # seasonal
+                  ymin = table_y_min2$inundation, 
+                  ymax = table_y_max2$inundation),fill="#6ece58", alpha= 0.3)+  #Temporarily inundated
+  geom_ribbon(aes(x = table_y_mean2$time, # never
+                  ymin = table_y_max2$inundation, 
+                  ymax = 100),fill="#fde725", alpha= 0.2)+ # Never inundated
+  labs(title = "Permanently and seasonally inundated area (Jussila model)",
+       x = "Year",
+       y = "Inundated area %") +
+  theme_minimal() + theme(legend.position="none") # + scale_x_date(date_breaks = "1 year")
+```
+
+```{r}
+# Extract the layer
+x <- obj_y_mean2[1]
+
+# Classify pixel values
+vals <- x[[1]]
+
+classified_vals <- ifelse(
+  is.na(vals), NA,
+  ifelse(vals == 0, "permanently dry",
+         ifelse(vals == 1, "permanently inundated",
+                "seasonally inundated"))
+)
+
+# Rebuild a stars object, preserving geometry
+classified <- st_as_stars(classified_vals)
+st_dimensions(classified) <- st_dimensions(x)
+st_crs(classified) <- st_crs(x)
+
+# Convert to factor (only with existing levels)
+present_classes <- sort(unique(na.omit(as.vector(classified_vals))))
+classified[[1]] <- factor(classified[[1]], levels = present_classes)
+
+# Define full color scheme, but only use what’s needed
+full_colors <- c(
+  "permanently dry" = "tan",
+  "seasonally inundated" = "lightblue",
+  "permanently inundated" = "blue4"
+)
+class_colors <- full_colors[present_classes]
+
+ggplot() +
+  geom_stars(data = classified, aes(x = x, y = y)) +
+  scale_fill_manual(values = class_colors, name = "Inundation Class") +
+  geom_sf(data = AOI, fill = NA, color = "red", size = 0.7) +
+  coord_sf() +
+  facet_wrap(~ time, ncol = 3) +
+  labs(
+    title = "Inundation Frequency Classification",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    panel.border = element_rect(color = "grey40", fill = NA),
+    strip.text = element_text(face = "bold")
+  )
+
+```

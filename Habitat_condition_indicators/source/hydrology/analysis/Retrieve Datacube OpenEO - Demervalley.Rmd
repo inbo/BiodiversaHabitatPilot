@@ -15,8 +15,8 @@ output:
       toc_float: true
       number_sections: true
       code_folding: show
-knit: (function(input, ...) {rmarkdown::render(input, output_file="./source/hydrology/analysis/Retrieve_Datacube_Open_EO-Demervalley.html")})
 ---
+
 
 
 ```{r author-info, results='asis', echo=FALSE}
@@ -25,23 +25,22 @@ cat("
 <strong>Sebastiaan Verbesselt</strong><br>
 Instituut voor Natuur- en Bosonderzoek<br>
 <a href='https://orcid.org/0000-0003-0173-1123' target='_blank'>
-<img src='../media/Orcid_icon.png' alt='ORCID' 
+<img src='G:/Gedeelde drives/Team_BioDiv/5_Projecten/2024_Biodiversa_habitatpilot/WP2_3/INBO_Github_Biodiversa_Habitat_Pilot/Habitat_condition_indicators/source/hydrology/media/Orcid_icon.png' alt='ORCID' 
      style='width:18px; vertical-align:middle; margin-right:4px;'> 
 https://orcid.org/0000-0003-0173-1123
 </a>
 </p>
 
 <p>
-<strong>Hans Gardfjell</strong><br>
-Sveriges Lantbruksuniversitet<br>
-<a href='https://orcid.org/0009-0004-5304-3095' target='_blank'>
-<img src='../media/Orcid_icon.png' alt='ORCID' 
+<strong>Tytti Jussila</strong><br>
+Finnish Environment Institute<br>
+<a href='https://orcid.org/0000-0003-4646-0152' target='_blank'>
+<img src='G:/Gedeelde drives/Team_BioDiv/5_Projecten/2024_Biodiversa_habitatpilot/WP2_3/INBO_Github_Biodiversa_Habitat_Pilot/Habitat_condition_indicators/source/hydrology/media/Orcid_icon.png' alt='ORCID' 
      style='width:18px; vertical-align:middle; margin-right:4px;'> 
-https://orcid.org/0009-0004-5304-3095
+https://orcid.org/0000-0003-4646-0152
 </a>
 </p>
 ")
-
 ```
 
 
@@ -64,7 +63,7 @@ You first need to create an account op the Copernicus Data Space Ecosystem (CDSE
 
 Once you have access to OpenEO, you have access to all the supported back-ends (without having additional API's) like SentinelHub, Terrascope, EODC,... 
 
-![The platforms that make up the openEO federated platform. Source: <https://docs.openeo.cloud/federation/#data-collections>](../media/federationc4cdfa06.png)
+![The platforms that make up the openEO federated platform. Source: <https://docs.openeo.cloud/federation/#data-collections>](G:/Gedeelde drives/Team_BioDiv/5_Projecten/2024_Biodiversa_habitatpilot/WP2_3/INBO_Github_Biodiversa_Habitat_Pilot/Habitat_condition_indicators/source/hydrology/media/federationc4cdfa06.png)
 
 ```{r connect to OpenEO accout, eval = FALSE}
 connection <- connect("https://openeo.dataspace.copernicus.eu")
