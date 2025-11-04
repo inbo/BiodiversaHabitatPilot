@@ -1,5 +1,5 @@
 <!-- badges: start -->
-[![website](https://img.shields.io/badge/website-https://inbo.github.io/inbomd_examples-c04384)](https://www.biodiversa.eu/)
+[![website](https://img.shields.io/badge/website-https://www.biodiversa.eu/-c04384)](https://www.biodiversa.eu/)
 ![GitHub](https://img.shields.io/github/license/inbo/inbomd_examples)
 <!-- badges: end -->
 
