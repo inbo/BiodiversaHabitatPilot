@@ -1,5 +1,5 @@
 <!-- badges: start -->
-[![website](https://www.biodiversa.eu/)](https://www.biodiversa.eu/)
+[website ![website](https://www.biodiversa.eu/)](https://www.biodiversa.eu/)
 ![GitHub](https://img.shields.io/github/license/inbo/inbomd_examples)
 <!-- badges: end -->
 
@@ -30,5 +30,5 @@ R sripts with there documentation are provided in Rmarkdown files and rendered a
 Python scripts are provided as Jupyter notebooks.
 <!-- description: end -->
 
-[![INBOLogo](./Logos/image-1.png)][(https://www.biodiversa.eu/](https://www.vlaanderen.be/inbo/home/))
+[![INBOLogo](./Logos/image-1.png)](https://www.vlaanderen.be/inbo/home/)
 [![BiodiversaLogo](./Logos/image.png)](https://www.biodiversa.eu/)
