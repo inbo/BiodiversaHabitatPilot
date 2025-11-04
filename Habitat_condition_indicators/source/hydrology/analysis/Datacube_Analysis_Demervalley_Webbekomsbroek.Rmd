@@ -514,7 +514,7 @@ ggplot() +
 
 Lefebvre, Gaëtan, Aurélie Davranche, Loïc Willm, e.a. ‘Introducing WIW for Detecting the Presence of Water in Wetlands with Landsat and Sentinel Satellites’. *Remote Sensing* 11, nr. 19 (2019): 2210. <https://doi.org/10.3390/rs11192210>.
 
-```{r}
+```{r Wiw classification, class.source = 'fold-hide'}
 watercl_wiw <- obj_df$b8a <= 1804 & obj_df$b12 <= 1131
 watercl_wiw <- watercl_wiw*1 
 pred_levels <- c("dry" , "water")
@@ -644,9 +644,9 @@ obj_wetness <-
          STR = ((1-B11/10000)^2)/(2*B11/10000)) # Transformed SWIR. Should be linearly correlated with soil moisture (Sadeghi et al.,2017, https://doi.org/10.1016/j.rse.2017.05.041)
 ```
 
-Visualize the different soil moisture indices for the last available date.
+Visualize the different soil moisture indices for the target date.
 
-```{r check indices output for last available date with the datacube, class.source = 'fold-hide'}
+```{r check indices output for the target date with the datacube, class.source = 'fold-hide'}
 # Extract that layer
 obj_wetness_target <- obj_wetness[,,,i]
 
