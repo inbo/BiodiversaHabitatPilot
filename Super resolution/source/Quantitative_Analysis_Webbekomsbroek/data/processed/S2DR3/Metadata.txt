@@ -1,0 +1,7 @@
+S2L2Ax10_T31UFS-1b90b406-20230301_MS.tif
+
+S2L2A: Sentinel-2 satellite, L2A product (atmospherically corrected surface reflectance product derived from the Level-1C product).
+T31UFS: MGRS tile ID (31UFS = region in Europe)
+x10: Indicates that this product is a super resolution output (10x zoom in, from 10mx10m to 1mx1m product)
+1b90b406-20230301: random generated code (unique id?)
+MS: Multi-spectral product (12 bands)

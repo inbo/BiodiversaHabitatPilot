@@ -1,0 +1,859 @@
+---
+title: "Webbekomsbroek_super-resolution_S2DR3"
+author: 
+  - name: "Albin Bjärhall (main author)"
+    affiliation: "Eurac Research"
+  - name: "Sebastiaan Verbesselt"
+    affiliation: "Instituut voor Natuur- en Bosonderzoek"
+    orcid: "0000-0003-0173-1123"
+
+date: "`r Sys.Date()`"
+format: 
+  html:
+    df-print: paged
+    toc: true
+    toc-float: true
+    number-sections: true
+    code-fold: show
+
+
+editor: source
+knitr: 
+  opts_knit: 
+    root.dir: "G:/Gedeelde drives/Team_BioDiv/5_Projecten/2024_Biodiversa_habitatpilot/WP2_3/INBO_Github_Biodiversa_Habitat_Pilot/Super resolution"
+---
+
+```{r author-info}
+#| echo: FALSE
+#| results: 'asis'
+cat("
+<p>
+<strong>Albin Bjärhall</strong><br>
+Eurac Research<br>
+</p>
+
+<p>
+<strong>Sebastiaan Verbesselt</strong><br>
+Instituut voor Natuur- en Bosonderzoek<br>
+<a href='https://orcid.org/0000-0003-0173-1123' target='_blank'>
+<img src='G:/Gedeelde drives/Team_BioDiv/5_Projecten/2024_Biodiversa_habitatpilot/WP2_3/INBO_Github_Biodiversa_Habitat_Pilot/Habitat_condition_indicators/source/hydrology/media/Orcid_icon.png' alt='ORCID' 
+     style='width:18px; vertical-align:middle; margin-right:4px;'> 
+https://orcid.org/0000-0003-0173-1123
+</a>
+</p>
+
+
+")
+```
+
+
+## Super-resolution sub-task: Quantitative performance evaluation
+
+This script tries to recreate the evaluation of super-resolution images described in this article \["https://medium.com/@ya_71389/sentinel-2-deep-resolution-3-0-c71a601a2253ndefined"\] as part of the activities in the Habitat pilot.
+
+The evaluation includes scatter-plotting the pixel values of a super-resolution image against a reference image (with the same pixel resolution) and calculate the following metrics: R2, RMSE, PSNR and SSIM. The script also includes options to re-calibrate the super-resolution map by histogram-matching, visualize the maps in RGB and plot the pixel-value histograms.
+
+```{r deps}
+#| warning: FALSE 
+#| message: FALSE
+
+library(terra)
+library(ggplot2)
+library(dplyr)
+library(sf)
+library(viridis)
+library(SSIMmap)
+library(INBOmd)
+library(INBOtheme)
+```
+
+## Load data
+
+Upload a file of the AOI and the map images that you would like to evaluate (by changing the directories in the code below). The script is currently set up for comparing a deep-resolution image from S2DR3T with an ortho image and a Sentinel-2 scene. For evaluating a super-resolution image from Metria, un-comment the last sections of the code below.
+
+```{r setup}
+#| results: 'hide'
+
+# upload AOI as geojson, shapefile or geopackage
+aoi <- st_read("./source/Quantitative_Analysis_Webbekomsbroek/data/raw/test_site.shp")
+# upload S2 scene
+s2 <- rast("./source/Quantitative_Analysis_Webbekomsbroek/data/raw/S2L2A_T31UFS-1b90bf406-20230301_MS.tif")
+if (crs(s2) != crs(aoi)) {
+  s2 <- project(s2, crs(aoi))
+}
+# upload S2DR3T image from same date as the S2 scene
+s2dr3t <- rast("./source/Quantitative_Analysis_Webbekomsbroek/data/processed/S2DR3/S2L2Ax10_T31UFS-1b90bf406-20230301_MS.tif")
+if (crs(s2dr3t) != crs(aoi)) {
+  s2dr3t <- project(s2dr3t, crs(aoi))
+}
+stopifnot(
+  crs(s2) == crs(aoi),
+  crs(s2dr3t) == crs(aoi)
+)
+
+ortho <- rast("./source/Quantitative_Analysis_Webbekomsbroek/data/raw/Ortho_extent_WB_2023.tif")
+
+ortho <- ortho * (10000 / 255)
+
+if (crs(ortho) != crs(aoi)) {
+  ortho <- project(ortho, crs(aoi))
+}
+stopifnot(
+  crs(s2) == crs(aoi),
+  crs(s2dr3t) == crs(aoi),
+  crs(ortho) == crs(aoi)
+)
+# crop images to the aoi
+s2dr3t <- crop(s2dr3t, vect(aoi))
+s2 <- crop(s2, vect(aoi))
+ortho <- crop(ortho,vect(aoi))
+```
+
+## Crop bands and downscale SR map
+
+Specify which super-resolution map you are evaluating (currently set to S2DR3T) and which reference map you want to compare it to (currently set to ortho-imagery and later for a Sentinel-2 image). For the evaluation, the two maps should have the same resolution and contain the same bands. Depending on how many bands your super-resolution and reference map have (the S2DR3T-images and S2-scenes provided by Sebastiaan both contain the same 10 bands, whereas the Metria images only contain 3 or 6 bands), you may have to crop out the bands of the SR_map from the ref_map (or vice versa) by un-commenting the corresponding line in the code below. Also note that if you are using an orthophoto (instead of an S2 scene) as ref_map, then the ref_map should be down-scaled to match the resolution of the SR_map (instead of down-scaling the SR_map to match the ref_map as the script currently does).
+
+
+```{r}
+names(ortho) <- c("B02","B03","B04")
+```
+
+::: panel-tabset
+
+### Comparison with orhto image
+```{r filter ortho}
+#| code-fold: TRUE
+
+## Specify which two images (SR_map & ref_map) you want to evaluate
+SR_map <- s2dr3t
+
+#ref_map <- s2
+ref_map <- ortho
+
+## Re-scale the image with the higher resolution to match the resolution of the other. If your ref_map has the higher resolution, un-comment the row below and switch places of 'SR_map' and 'ref_map' in the line for resampling (down-scaling the resolution) of the SR_map/ref_map. 
+
+#SR_original <- SR_map
+# ref_original <- ref_map
+#SR_map <- resample(SR_map, ref_map, method = "bilinear")
+ref_map <- resample(ref_map,SR_map, method = "bilinear")
+
+
+## Make sure the two maps contain the same bands. Check which bands your two maps have by un-commenting the two lines below
+names(SR_map)
+names(ref_map)
+## If necessary, crop out the common bands from whichever file has the more bands by un-commenting one of the two lines below. The first line will extract the bands existing in SR_map from the ref_map (use this for evaluating the Metria image), and the second line does to opposite.
+
+#ref_map <- ref_map[[names(SR_map)]]
+SR_map <- SR_map[[names(ref_map)]]
+stopifnot(
+  names(SR_map) == names(ref_map),
+  all(res(SR_map) == res(ref_map))
+)
+bands <- names(ref_map)
+```
+
+**Optional: Visual comparison of the maps over orthophoto**
+
+Un-comment and run the section below if you want to visually compare the different maps over a WMS. Change the "baseUrl" and "layers" to match your local orthophoto.
+
+```{r visualize ortho}
+#| code-fold: TRUE
+# library(leafem)
+# library(leaflet)
+# ref_RGB <- clamp(ref_map[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)
+# SR_RGB <- clamp(SR_map[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)
+# SR_original_RGB <- clamp(SR_original[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)
+# # SR_match_RGB <- clamp(SR_match[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)
+# 
+# leaflet() %>%
+#   addWMSTiles(
+#     baseUrl = "http://url/to/local/orthophoto/wms",
+#     layers = "layer-name-of-wms",
+#     options = WMSTileOptions(
+#       format = "image/jpeg",
+#       transparent = FALSE
+#     ),
+#     group = "Orthophoto"
+#   ) %>%
+#   addRasterRGB(ref_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Reference map") %>%
+#   addRasterRGB(SR_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (downscaled) map") %>%
+#   addRasterRGB(SR_original_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (original) map") %>%
+#   # addRasterRGB(SR_match_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (histogram-matched) map") %>%
+#   addLayersControl(
+#     baseGroups = c("Orthophoto"),
+#     overlayGroups = c(
+#       "Reference map", 
+#       "Super-resolution (downscaled) map", 
+#       # "Super-resolution (histogram-matched) map",
+#       "Super-resolution (original) map"
+#       ),
+#     options = layersControlOptions(collapsed = FALSE)
+#   )
+```
+
+**Optional: Plot histograms of RGB bands**
+
+Un-comment and run the section below if you want to plot and compare the histograms of the RGB bands of the maps
+
+```{r histogram ortho}
+#| code-fold: TRUE
+# plot_histograms <- function(raster_obj, title_prefix = "Raster") {
+#   par(mfrow = c(1, nlyr(raster_obj)))  # 1 row, N columns
+#   for (i in 1:nlyr(raster_obj)) {
+#     hist(values(raster_obj[[i]]), 
+#          breaks = 100, 
+#          main = paste(title_prefix, "- B", i),
+#          xlab = "Pixel Values", 
+#          col = "gray", 
+#          border = "black")
+#   }
+#   par(mfrow = c(1,1))  # Reset layout
+# }
+# 
+# plot_histograms(ref_RGB, "Ref")
+# plot_histograms(SR_RGB, "SR-downsc.")
+# plot_histograms(SR_original_RGB, "SR-orig.")
+# # plot_histograms(SR_match_RGB, "SR-match")
+```
+#### No histogram matching
+
+##### Create stack, calculate metrics and plot data
+
+If you want to evaluate the histogram-matched version of the SR_map, simply assign SR_match (instead of SR_match) to SR_plot by un-commenting the line below.
+
+```{r stack1}
+SR_plot <- SR_map
+#SR_plot <- SR_match
+ref_plot <- ref_map
+## Stack the super-resolution and ref maps
+stack_names <- c(
+  paste0("SR_", bands),
+  paste0("ref_", bands)
+)
+stack <- c(SR_plot, ref_plot)
+names(stack) <- stack_names
+# Convert stacks to data frames for pixel comparison
+df <- as.data.frame(stack, xy = TRUE, na.rm = TRUE)
+# Prepare the super-resolution and sentinel-2 images for plotting
+plot_data <- data.frame()
+for (band in bands) {
+  SR_band <- paste0("SR_", band)
+  ref_band <- paste0("ref_", band)
+  if (!all(c(SR_band, ref_band) %in% colnames(df))) next
+  # Combine pixel values into a long-format dataframe
+  plot_data <- bind_rows(
+    plot_data,
+    data.frame(
+      SR = df[[SR_band]],
+      ref = df[[ref_band]],
+      Band = paste0(band)
+    )
+  )
+}
+```
+
+Filter out NA values before proceeding.
+```{r filter NA values 1}
+# Fix if previous script caused an error:
+SR_plot <- ifel(is.na(ref_plot), NA, SR_plot)
+ref_plot <- ifel(is.na(SR_plot), NA, ref_plot)
+```
+
+Calculate the metrics.
+```{r calculate metrics 1}
+
+rmse_vals <- c()
+r2_vals   <- c()
+R2_vals <- c()
+psnr_vals <- c()
+ssim_vals <- c()
+
+max_pixel <- 10000
+
+for (band in bands) {
+  SR_vals  <- values(SR_plot[[band]], na.rm = TRUE)
+  ref_vals <- values(ref_plot[[band]], na.rm = TRUE)
+
+  # RMSE
+  rmse <- sqrt(mean((SR_vals - ref_vals)^2))
+  rmse_vals <- c(rmse_vals, rmse)
+
+  # r²
+  r2 <- cor(SR_vals, ref_vals)^2
+  r2_vals <- c(r2_vals, r2)
+
+  # R² 
+  ss_res <- sum((SR_vals - ref_vals)^2)
+  ss_tot <- sum((SR_vals - mean(SR_vals))^2)
+  R2 <- 1 - (ss_res / ss_tot)
+  R2_vals <- c(R2_vals, R2)
+
+  # PSNR
+  psnr <- 20 * log10(max_pixel / rmse)
+  psnr_vals <- c(psnr_vals, psnr)
+
+  # --- SSIM (normalize to 0-1) ---
+  SR_norm  <- (SR_plot[[band]]) / max_pixel
+  ref_norm <- (ref_plot[[band]]) / max_pixel
+
+  ssim_out  <- capture.output(ssim_raster(SR_norm, ref_norm))
+  ssim_line <- grep("SSIM:", ssim_out, value = TRUE)[1]
+  ssim_val  <- as.numeric(sub(".*SSIM: ([0-9.]+).*", "\\1", ssim_line))
+  ssim_vals <- c(ssim_vals, ssim_val)
+}
+
+rmse_avg <- mean(rmse_vals)
+r2_avg   <- mean(r2_vals)
+R2_avg <- mean(R2_vals)
+psnr_avg <- mean(psnr_vals)
+ssim_avg <- mean(ssim_vals)
+
+# Annotation text
+metrics_text <- paste(
+  paste0("RMSE = ", round(rmse_avg, 2)),
+  paste0("r² = ", round(r2_avg, 3)),
+  paste0("R² = ", round(R2_avg, 3)),
+  paste0("PSNR = ", round(psnr_avg, 2), " dB"),
+  paste0("SSIM = ", round(ssim_avg, 3)),
+  sep = "\n"
+)
+```
+
+Visualize.
+```{r plot 1}
+# Scatterplot the values and add the metrics
+ggplot(plot_data, aes(x = ref, y = SR, color = Band)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  guides(color = guide_legend(override.aes = list(size = 3))) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  theme_minimal() +
+  scale_color_viridis_d(option = "B") +
+  labs(
+    title = "Super-resolution vs reference map",
+    x = "Reference map",
+    y = "Super-resolution map",
+    color = "Band"
+  ) +
+  coord_fixed() +
+  annotate("text", x = Inf, y = -Inf, hjust = 1.1, vjust = -0.5,
+           label = metrics_text, size = 4, color = "black")
+```
+
+
+#### Histogram matching
+
+Un-comment and run the section below if you want to match the histogram of the SR_map with that of the ref_map
+
+```{r histogram-match ortho}
+hist_match <- function(target_spat, ref_spat) {
+  matched_spat <- target_spat
+  for (i in 1:nlyr(target_spat)) {
+    target_vals <- values(target_spat[[i]], mat = FALSE)
+    ref_vals <- values(ref_spat[[i]], mat = FALSE)
+    target_vals <- target_vals[!is.na(target_vals)]
+    ref_vals <- ref_vals[!is.na(ref_vals)]
+    target_ecdf <- ecdf(target_vals)
+    ref_quant <- quantile(ref_vals, probs = seq(0, 1, length.out = 1000), na.rm = TRUE)
+    map_vals <- function(x) {
+      p <- target_ecdf(x)
+      approx(seq(0, 1, length.out = 1000), ref_quant, xout = p, rule = 2)$y
+    }
+    matched_vals <- map_vals(values(target_spat[[i]], mat = FALSE))
+    out_layer <- target_spat[[i]]
+    values(out_layer) <- matched_vals
+    matched_spat[[i]] <- out_layer
+  }
+  return(matched_spat)
+}
+
+SR_match <- hist_match(SR_map, ref_map)
+```
+##### Create stack, calculate metrics and plot data
+
+If you want to evaluate the histogram-matched version of the SR_map, simply assign SR_match (instead of SR_match) to SR_plot by un-commenting the line below.
+```{r stack2}
+#SR_plot <- SR_map
+SR_plot <- SR_match
+ref_plot <- ref_map
+## Stack the super-resolution and ref maps
+stack_names <- c(
+  paste0("SR_", bands),
+  paste0("ref_", bands)
+)
+stack <- c(SR_plot, ref_plot)
+names(stack) <- stack_names
+# Convert stacks to data frames for pixel comparison
+df <- as.data.frame(stack, xy = TRUE, na.rm = TRUE)
+# Prepare the super-resolution and sentinel-2 images for plotting
+plot_data <- data.frame()
+for (band in bands) {
+  SR_band <- paste0("SR_", band)
+  ref_band <- paste0("ref_", band)
+  if (!all(c(SR_band, ref_band) %in% colnames(df))) next
+  # Combine pixel values into a long-format dataframe
+  plot_data <- bind_rows(
+    plot_data,
+    data.frame(
+      SR = df[[SR_band]],
+      ref = df[[ref_band]],
+      Band = paste0(band)
+    )
+  )
+}
+```
+
+Filter out NA values before proceeding.
+```{r filter NA values 2}
+# Fix if previous script caused an error:
+SR_plot <- ifel(is.na(ref_plot), NA, SR_plot)
+ref_plot <- ifel(is.na(SR_plot), NA, ref_plot)
+```
+
+Calculate the metrics.
+```{r Calculate the metrics 2}
+rmse_vals <- c()
+r2_vals   <- c()
+R2_vals   <- c()
+psnr_vals <- c()
+ssim_vals <- c()
+
+max_pixel <- 10000
+
+for (band in bands) {
+  SR_vals  <- values(SR_plot[[band]], na.rm = TRUE)
+  ref_vals <- values(ref_plot[[band]], na.rm = TRUE)
+
+  # RMSE
+  rmse <- sqrt(mean((SR_vals - ref_vals)^2))
+  rmse_vals <- c(rmse_vals, rmse)
+
+  # r²
+  r2 <- cor(SR_vals, ref_vals)^2
+  r2_vals <- c(r2_vals, r2)
+
+  # R²
+  ss_res <- sum((SR_vals - ref_vals)^2)
+  ss_tot <- sum((SR_vals - mean(SR_vals))^2)
+  R2 <- 1 - (ss_res / ss_tot)
+  R2_vals <- c(R2_vals, R2)
+
+  # PSNR
+  psnr <- 20 * log10(max_pixel / rmse)
+  psnr_vals <- c(psnr_vals, psnr)
+
+  # --- SSIM (normalize to 0-1) ---
+  SR_norm  <- (SR_plot[[band]]) / max_pixel
+  ref_norm <- (ref_plot[[band]]) / max_pixel
+
+  ssim_out  <- capture.output(ssim_raster(SR_norm, ref_norm))
+  ssim_line <- grep("SSIM:", ssim_out, value = TRUE)[1]
+  ssim_val  <- as.numeric(sub(".*SSIM: ([0-9.]+).*", "\\1", ssim_line))
+  ssim_vals <- c(ssim_vals, ssim_val)
+}
+
+rmse_avg <- mean(rmse_vals)
+r2_avg   <- mean(r2_vals)
+psnr_avg <- mean(psnr_vals)
+ssim_avg <- mean(ssim_vals)
+
+# Annotation text
+metrics_text <- paste(
+  paste0("RMSE = ", round(rmse_avg, 2)),
+  paste0("r² = ", round(r2_avg, 3)),
+  paste0("R² = ", round(R2_avg, 3)),
+  paste0("PSNR = ", round(psnr_avg, 2), " dB"),
+  paste0("SSIM = ", round(ssim_avg, 3)),
+  sep = "\n"
+)
+```
+
+Visualize.
+```{r plot 2}
+# Scatterplot the values and add the metrics
+ggplot(plot_data, aes(x = ref, y = SR, color = Band)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  guides(color = guide_legend(override.aes = list(size = 3))) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  theme_minimal() +
+  scale_color_viridis_d(option = "B") +
+  labs(
+    title = "Super-resolution vs reference map",
+    x = "Reference map",
+    y = "Super-resolution map",
+    color = "Band"
+  ) +
+  coord_fixed() +
+  annotate("text", x = Inf, y = -Inf, hjust = 1.1, vjust = -0.5,
+           label = metrics_text, size = 4, color = "black")
+```
+:::
+
+
+::: panel-tabset
+### Comparison with Sentinel-2 image
+```{r filter S2}
+#| code-fold: TRUE
+
+## Specify which two images (SR_map & ref_map) you want to evaluate
+SR_map <- s2dr3t
+
+ref_map <- s2
+#ref_map <- ortho
+
+## Re-scale the image with the higher resolution to match the resolution of the other. If your ref_map has the higher resolution, un-comment the row below and switch places of 'SR_map' and 'ref_map' in the line for resampling (down-scaling the resolution) of the SR_map/ref_map. 
+SR_original <- SR_map
+# ref_original <- ref_map
+SR_map <- resample(SR_map, ref_map, method = "bilinear")
+#ref_map <- resample(ref_map,SR_map, method = "bilinear")
+
+
+## Make sure the two maps contain the same bands. Check which bands your two maps have by un-commenting the two lines below
+names(SR_map)
+names(ref_map)
+## If necessary, crop out the common bands from whichever file has the more bands by un-commenting one of the two lines below. The first line will extract the bands existing in SR_map from the ref_map (use this for evaluating the Metria image), and the second line does to opposite.
+
+#ref_map <- ref_map[[names(SR_map)]]
+SR_map <- SR_map[[names(ref_map)]]
+stopifnot(
+  names(SR_map) == names(ref_map),
+  all(res(SR_map) == res(ref_map))
+)
+bands <- names(ref_map)
+```
+
+**Optional: Visual comparison of the maps over orthophoto**
+
+Un-comment and run the section below if you want to visually compare the different maps over a WMS. Change the "baseUrl" and "layers" to match your local orthophoto.
+
+```{r visualize S2}
+#| code-fold: TRUE
+# library(leafem)
+# library(leaflet)
+# ref_RGB <- clamp(ref_map[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)
+# SR_RGB <- clamp(SR_map[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)
+# SR_original_RGB <- clamp(SR_original[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)
+# # SR_match_RGB <- clamp(SR_match[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)
+# 
+# leaflet() %>%
+#   addWMSTiles(
+#     baseUrl = "http://url/to/local/orthophoto/wms",
+#     layers = "layer-name-of-wms",
+#     options = WMSTileOptions(
+#       format = "image/jpeg",
+#       transparent = FALSE
+#     ),
+#     group = "Orthophoto"
+#   ) %>%
+#   addRasterRGB(ref_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Reference map") %>%
+#   addRasterRGB(SR_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (downscaled) map") %>%
+#   addRasterRGB(SR_original_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (original) map") %>%
+#   # addRasterRGB(SR_match_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (histogram-matched) map") %>%
+#   addLayersControl(
+#     baseGroups = c("Orthophoto"),
+#     overlayGroups = c(
+#       "Reference map", 
+#       "Super-resolution (downscaled) map", 
+#       # "Super-resolution (histogram-matched) map",
+#       "Super-resolution (original) map"
+#       ),
+#     options = layersControlOptions(collapsed = FALSE)
+#   )
+```
+
+**Optional: Plot histograms of RGB bands**
+
+Un-comment and run the section below if you want to plot and compare the histograms of the RGB bands of the maps
+
+```{r histogram S2}
+# plot_histograms <- function(raster_obj, title_prefix = "Raster") {
+#   par(mfrow = c(1, nlyr(raster_obj)))  # 1 row, N columns
+#   for (i in 1:nlyr(raster_obj)) {
+#     hist(values(raster_obj[[i]]), 
+#          breaks = 100, 
+#          main = paste(title_prefix, "- B", i),
+#          xlab = "Pixel Values", 
+#          col = "gray", 
+#          border = "black")
+#   }
+#   par(mfrow = c(1,1))  # Reset layout
+# }
+# 
+# plot_histograms(ref_RGB, "Ref")
+# plot_histograms(SR_RGB, "SR-downsc.")
+# plot_histograms(SR_original_RGB, "SR-orig.")
+# # plot_histograms(SR_match_RGB, "SR-match")
+```
+#### No histogram matching
+
+##### Create stack, calculate metrics and plot data
+
+If you want to evaluate the histogram-matched version of the SR_map, simply assign SR_match (instead of SR_match) to SR_plot by un-commenting the line below.
+
+```{r stack3}
+SR_plot <- SR_map
+#SR_plot <- SR_match
+ref_plot <- ref_map
+## Stack the super-resolution and ref maps
+stack_names <- c(
+  paste0("SR_", bands),
+  paste0("ref_", bands)
+)
+stack <- c(SR_plot, ref_plot)
+names(stack) <- stack_names
+# Convert stacks to data frames for pixel comparison
+df <- as.data.frame(stack, xy = TRUE, na.rm = TRUE)
+# Prepare the super-resolution and sentinel-2 images for plotting
+plot_data <- data.frame()
+for (band in bands) {
+  SR_band <- paste0("SR_", band)
+  ref_band <- paste0("ref_", band)
+  if (!all(c(SR_band, ref_band) %in% colnames(df))) next
+  # Combine pixel values into a long-format dataframe
+  plot_data <- bind_rows(
+    plot_data,
+    data.frame(
+      SR = df[[SR_band]],
+      ref = df[[ref_band]],
+      Band = paste0(band)
+    )
+  )
+}
+```
+
+
+Filter out NA values before proceeding.
+```{r Filter NA values 3}
+# Fix if previous script caused an error:
+SR_plot <- ifel(is.na(ref_plot), NA, SR_plot)
+ref_plot <- ifel(is.na(SR_plot), NA, ref_plot)
+```
+
+Calculate the metrics.
+```{r Calculate the metrics 3}
+# Fix if previous script caused an error:
+rmse_vals <- c()
+r2_vals   <- c()
+R2_vals   <- c()
+psnr_vals <- c()
+ssim_vals <- c()
+
+max_pixel <- 10000
+
+for (band in bands) {
+  SR_vals  <- values(SR_plot[[band]], na.rm = TRUE)
+  ref_vals <- values(ref_plot[[band]], na.rm = TRUE)
+
+  # RMSE
+  rmse <- sqrt(mean((SR_vals - ref_vals)^2))
+  rmse_vals <- c(rmse_vals, rmse)
+
+  # r²
+  r2 <- cor(SR_vals, ref_vals)^2
+  r2_vals <- c(r2_vals, r2)
+
+  # R²
+  ss_res <- sum((SR_vals - ref_vals)^2)
+  ss_tot <- sum((SR_vals - mean(SR_vals))^2)
+  R2 <- 1 - (ss_res / ss_tot)
+  R2_vals <- c(R2_vals, R2)
+
+  # PSNR
+  psnr <- 20 * log10(max_pixel / rmse)
+  psnr_vals <- c(psnr_vals, psnr)
+
+  # --- SSIM (normalize to 0-1) ---
+  SR_norm  <- (SR_plot[[band]]) / max_pixel
+  ref_norm <- (ref_plot[[band]]) / max_pixel
+
+  ssim_out  <- capture.output(ssim_raster(SR_norm, ref_norm))
+  ssim_line <- grep("SSIM:", ssim_out, value = TRUE)[1]
+  ssim_val  <- as.numeric(sub(".*SSIM: ([0-9.]+).*", "\\1", ssim_line))
+  ssim_vals <- c(ssim_vals, ssim_val)
+}
+
+rmse_avg <- mean(rmse_vals)
+r2_avg   <- mean(r2_vals)
+R2_avg   <- mean(R2_vals)
+psnr_avg <- mean(psnr_vals)
+ssim_avg <- mean(ssim_vals)
+
+# Annotation text
+metrics_text <- paste(
+  paste0("RMSE = ", round(rmse_avg, 2)),
+  paste0("r² = ", round(r2_avg, 3)),
+  paste0("R² = ", round(R2_avg, 3)),
+  paste0("PSNR = ", round(psnr_avg, 2), " dB"),
+  paste0("SSIM = ", round(ssim_avg, 3)),
+  sep = "\n"
+)
+```
+
+Visualize.
+```{r plot 3}
+# Scatterplot the values and add the metrics
+ggplot(plot_data, aes(x = ref, y = SR, color = Band)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  guides(color = guide_legend(override.aes = list(size = 3))) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  theme_minimal() +
+  scale_color_viridis_d(option = "B") +
+  labs(
+    title = "Super-resolution vs reference map",
+    x = "Reference map",
+    y = "Super-resolution map",
+    color = "Band"
+  ) +
+  coord_fixed() +
+  annotate("text", x = Inf, y = -Inf, hjust = 1.1, vjust = -0.5,
+           label = metrics_text, size = 4, color = "black")
+```
+
+
+#### Histogram matching
+
+Un-comment and run the section below if you want to match the histogram of the SR_map with that of the ref_map
+
+```{r histogram-match Sentinel-2}
+hist_match <- function(target_spat, ref_spat) {
+  matched_spat <- target_spat
+  for (i in 1:nlyr(target_spat)) {
+    target_vals <- values(target_spat[[i]], mat = FALSE)
+    ref_vals <- values(ref_spat[[i]], mat = FALSE)
+    target_vals <- target_vals[!is.na(target_vals)]
+    ref_vals <- ref_vals[!is.na(ref_vals)]
+    target_ecdf <- ecdf(target_vals)
+    ref_quant <- quantile(ref_vals, probs = seq(0, 1, length.out = 1000), na.rm = TRUE)
+    map_vals <- function(x) {
+      p <- target_ecdf(x)
+      approx(seq(0, 1, length.out = 1000), ref_quant, xout = p, rule = 2)$y
+    }
+    matched_vals <- map_vals(values(target_spat[[i]], mat = FALSE))
+    out_layer <- target_spat[[i]]
+    values(out_layer) <- matched_vals
+    matched_spat[[i]] <- out_layer
+  }
+  return(matched_spat)
+}
+
+SR_match <- hist_match(SR_map, ref_map)
+```
+##### Create stack, calculate metrics and plot data
+
+If you want to evaluate the histogram-matched version of the SR_map, simply assign SR_match (instead of SR_match) to SR_plot by un-commenting the line below.
+```{r stack4}
+#SR_plot <- SR_map
+SR_plot <- SR_match
+ref_plot <- ref_map
+## Stack the super-resolution and ref maps
+stack_names <- c(
+  paste0("SR_", bands),
+  paste0("ref_", bands)
+)
+stack <- c(SR_plot, ref_plot)
+names(stack) <- stack_names
+# Convert stacks to data frames for pixel comparison
+df <- as.data.frame(stack, xy = TRUE, na.rm = TRUE)
+# Prepare the super-resolution and sentinel-2 images for plotting
+plot_data <- data.frame()
+for (band in bands) {
+  SR_band <- paste0("SR_", band)
+  ref_band <- paste0("ref_", band)
+  if (!all(c(SR_band, ref_band) %in% colnames(df))) next
+  # Combine pixel values into a long-format dataframe
+  plot_data <- bind_rows(
+    plot_data,
+    data.frame(
+      SR = df[[SR_band]],
+      ref = df[[ref_band]],
+      Band = paste0(band)
+    )
+  )
+}
+```
+
+Filter out the NA values.
+```{r Filter NA values 4}
+# Fix if previous script caused an error:
+SR_plot <- ifel(is.na(ref_plot), NA, SR_plot)
+ref_plot <- ifel(is.na(SR_plot), NA, ref_plot)
+```
+
+Calculate the metrics.
+```{r Calculate the metrics 4}
+# Fix if previous script caused an error:
+rmse_vals <- c()
+r2_vals   <- c()
+R2_vals   <- c()
+psnr_vals <- c()
+ssim_vals <- c()
+
+max_pixel <- 10000
+
+for (band in bands) {
+  SR_vals  <- values(SR_plot[[band]], na.rm = TRUE)
+  ref_vals <- values(ref_plot[[band]], na.rm = TRUE)
+
+  # RMSE
+  rmse <- sqrt(mean((SR_vals - ref_vals)^2))
+  rmse_vals <- c(rmse_vals, rmse)
+
+  # r²
+  r2 <- cor(SR_vals, ref_vals)^2
+  r2_vals <- c(r2_vals, r2)
+  
+  # R²
+  ss_res <- sum((SR_vals - ref_vals)^2)
+  ss_tot <- sum((SR_vals - mean(SR_vals))^2)
+  R2 <- 1 - (ss_res / ss_tot)
+  R2_vals <- c(R2_vals, R2)
+
+  # PSNR
+  psnr <- 20 * log10(max_pixel / rmse)
+  psnr_vals <- c(psnr_vals, psnr)
+
+  # --- SSIM (normalize to 0-1) ---
+  SR_norm  <- (SR_plot[[band]]) / max_pixel
+  ref_norm <- (ref_plot[[band]]) / max_pixel
+
+  ssim_out  <- capture.output(ssim_raster(SR_norm, ref_norm))
+  ssim_line <- grep("SSIM:", ssim_out, value = TRUE)[1]
+  ssim_val  <- as.numeric(sub(".*SSIM: ([0-9.]+).*", "\\1", ssim_line))
+  ssim_vals <- c(ssim_vals, ssim_val)
+}
+
+rmse_avg <- mean(rmse_vals)
+r2_avg   <- mean(r2_vals)
+psnr_avg <- mean(psnr_vals)
+ssim_avg <- mean(ssim_vals)
+
+# Annotation text
+metrics_text <- paste(
+  paste0("RMSE = ", round(rmse_avg, 2)),
+  paste0("r² = ", round(r2_avg, 3)),
+  paste0("R² = ", round(R2_avg, 3)),
+  paste0("PSNR = ", round(psnr_avg, 2), " dB"),
+  paste0("SSIM = ", round(ssim_avg, 3)),
+  sep = "\n"
+)
+```
+
+Vizualize.
+```{r plot 4}
+# Scatterplot the values and add the metrics
+ggplot(plot_data, aes(x = ref, y = SR, color = Band)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  guides(color = guide_legend(override.aes = list(size = 3))) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  theme_minimal() +
+  scale_color_viridis_d(option = "B") +
+  labs(
+    title = "Super-resolution vs reference map",
+    x = "Reference map",
+    y = "Super-resolution map",
+    color = "Band"
+  ) +
+  coord_fixed() +
+  annotate("text", x = Inf, y = -Inf, hjust = 1.1, vjust = -0.5,
+           label = metrics_text, size = 4, color = "black")
+```
+:::

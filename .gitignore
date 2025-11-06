@@ -1,6 +1,7 @@
 *.nc
 *.gpkg
 *.tif
+*.xml
 *.tiff
 
 *.shp
@@ -13,3 +14,8 @@
 
 venv/
 .Rproj.user
+
+
+WB_SR_QA_S2DR3_files
+WB_SR_QA_Satlas_1im_input_files
+WB_SR_QA_Satlas_8im_input_files
