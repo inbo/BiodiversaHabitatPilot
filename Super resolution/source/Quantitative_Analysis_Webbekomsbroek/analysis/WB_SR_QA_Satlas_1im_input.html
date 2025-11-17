@@ -8,7 +8,7 @@
 
 <meta name="author" content="Albin Bjärhall (main author)">
 <meta name="author" content="Sebastiaan Verbesselt">
-<meta name="dcterms.date" content="2025-11-06">
+<meta name="dcterms.date" content="2025-11-17">
 
 <title>Webbekomsbroek_super-resolution_Metria_Satlas_model_1_image_input</title>
 <style>
@@ -128,7 +128,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 6, 2025</p>
+      <p class="date">November 17, 2025</p>
     </div>
   </div>
   
@@ -408,7 +408,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R² </span></span>
 <span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>  ss_res <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> <span class="fu">mean</span>(SR_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((ref_vals <span class="sc">-</span> <span class="fu">mean</span>(ref_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
 <span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (ss_res <span class="sc">/</span> ss_tot)</span>
 <span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>  R2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(R2_vals, R2)</span>
 <span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a></span>
@@ -575,7 +575,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R²</span></span>
 <span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>  ss_res <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> <span class="fu">mean</span>(SR_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((ref_vals <span class="sc">-</span> <span class="fu">mean</span>(ref_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
 <span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (ss_res <span class="sc">/</span> ss_tot)</span>
 <span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>  R2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(R2_vals, R2)</span>
 <span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a></span>
@@ -595,18 +595,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>rmse_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(rmse_vals)</span>
 <span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>r2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(r2_vals)</span>
-<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>psnr_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(psnr_vals)</span>
-<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>ssim_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(ssim_vals)</span>
-<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotation text</span></span>
-<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a>metrics_text <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
-<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"RMSE = "</span>, <span class="fu">round</span>(rmse_avg, <span class="dv">2</span>)),</span>
-<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"r² = "</span>, <span class="fu">round</span>(r2_avg, <span class="dv">3</span>)),</span>
-<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"R² = "</span>, <span class="fu">round</span>(R2_avg, <span class="dv">3</span>)),</span>
-<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"PSNR = "</span>, <span class="fu">round</span>(psnr_avg, <span class="dv">2</span>), <span class="st">" dB"</span>),</span>
-<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SSIM = "</span>, <span class="fu">round</span>(ssim_avg, <span class="dv">3</span>)),</span>
-<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
-<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>R2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(R2_vals)</span>
+<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>psnr_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(psnr_vals)</span>
+<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a>ssim_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(ssim_vals)</span>
+<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotation text</span></span>
+<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>metrics_text <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
+<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"RMSE = "</span>, <span class="fu">round</span>(rmse_avg, <span class="dv">2</span>)),</span>
+<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"r² = "</span>, <span class="fu">round</span>(r2_avg, <span class="dv">3</span>)),</span>
+<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"R² = "</span>, <span class="fu">round</span>(R2_avg, <span class="dv">3</span>)),</span>
+<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"PSNR = "</span>, <span class="fu">round</span>(psnr_avg, <span class="dv">2</span>), <span class="st">" dB"</span>),</span>
+<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SSIM = "</span>, <span class="fu">round</span>(ssim_avg, <span class="dv">3</span>)),</span>
+<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
+<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Visualize.</p>
@@ -825,7 +826,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R²</span></span>
 <span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a>  ss_res <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> <span class="fu">mean</span>(SR_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((ref_vals <span class="sc">-</span> <span class="fu">mean</span>(ref_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
 <span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (ss_res <span class="sc">/</span> ss_tot)</span>
 <span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>  R2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(R2_vals, R2)</span>
 <span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a></span>
@@ -993,7 +994,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R²</span></span>
 <span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>  ss_res <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> <span class="fu">mean</span>(SR_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((ref_vals <span class="sc">-</span> <span class="fu">mean</span>(ref_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
 <span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (ss_res <span class="sc">/</span> ss_tot)</span>
 <span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>  R2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(R2_vals, R2)</span>
 <span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a></span>
@@ -1013,18 +1014,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb36-41"><a href="#cb36-41" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb36-42"><a href="#cb36-42" aria-hidden="true" tabindex="-1"></a>rmse_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(rmse_vals)</span>
 <span id="cb36-43"><a href="#cb36-43" aria-hidden="true" tabindex="-1"></a>r2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(r2_vals)</span>
-<span id="cb36-44"><a href="#cb36-44" aria-hidden="true" tabindex="-1"></a>psnr_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(psnr_vals)</span>
-<span id="cb36-45"><a href="#cb36-45" aria-hidden="true" tabindex="-1"></a>ssim_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(ssim_vals)</span>
-<span id="cb36-46"><a href="#cb36-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-47"><a href="#cb36-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotation text</span></span>
-<span id="cb36-48"><a href="#cb36-48" aria-hidden="true" tabindex="-1"></a>metrics_text <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
-<span id="cb36-49"><a href="#cb36-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"RMSE = "</span>, <span class="fu">round</span>(rmse_avg, <span class="dv">2</span>)),</span>
-<span id="cb36-50"><a href="#cb36-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"r² = "</span>, <span class="fu">round</span>(r2_avg, <span class="dv">3</span>)),</span>
-<span id="cb36-51"><a href="#cb36-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"R² = "</span>, <span class="fu">round</span>(R2_avg, <span class="dv">3</span>)),</span>
-<span id="cb36-52"><a href="#cb36-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"PSNR = "</span>, <span class="fu">round</span>(psnr_avg, <span class="dv">2</span>), <span class="st">" dB"</span>),</span>
-<span id="cb36-53"><a href="#cb36-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SSIM = "</span>, <span class="fu">round</span>(ssim_avg, <span class="dv">3</span>)),</span>
-<span id="cb36-54"><a href="#cb36-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
-<span id="cb36-55"><a href="#cb36-55" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-44"><a href="#cb36-44" aria-hidden="true" tabindex="-1"></a>R2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(R2_vals)</span>
+<span id="cb36-45"><a href="#cb36-45" aria-hidden="true" tabindex="-1"></a>psnr_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(psnr_vals)</span>
+<span id="cb36-46"><a href="#cb36-46" aria-hidden="true" tabindex="-1"></a>ssim_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(ssim_vals)</span>
+<span id="cb36-47"><a href="#cb36-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-48"><a href="#cb36-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotation text</span></span>
+<span id="cb36-49"><a href="#cb36-49" aria-hidden="true" tabindex="-1"></a>metrics_text <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
+<span id="cb36-50"><a href="#cb36-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"RMSE = "</span>, <span class="fu">round</span>(rmse_avg, <span class="dv">2</span>)),</span>
+<span id="cb36-51"><a href="#cb36-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"r² = "</span>, <span class="fu">round</span>(r2_avg, <span class="dv">3</span>)),</span>
+<span id="cb36-52"><a href="#cb36-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"R² = "</span>, <span class="fu">round</span>(R2_avg, <span class="dv">3</span>)),</span>
+<span id="cb36-53"><a href="#cb36-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"PSNR = "</span>, <span class="fu">round</span>(psnr_avg, <span class="dv">2</span>), <span class="st">" dB"</span>),</span>
+<span id="cb36-54"><a href="#cb36-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SSIM = "</span>, <span class="fu">round</span>(ssim_avg, <span class="dv">3</span>)),</span>
+<span id="cb36-55"><a href="#cb36-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
+<span id="cb36-56"><a href="#cb36-56" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Vizualize.</p>

@@ -8,7 +8,7 @@
 
 <meta name="author" content="Albin Bjärhall (main author)">
 <meta name="author" content="Sebastiaan Verbesselt">
-<meta name="dcterms.date" content="2025-11-06">
+<meta name="dcterms.date" content="2025-11-17">
 
 <title>Webbekomsbroek_super-resolution_S2DR3</title>
 <style>
@@ -128,7 +128,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 6, 2025</p>
+      <p class="date">November 17, 2025</p>
     </div>
   </div>
   
@@ -404,7 +404,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R² </span></span>
 <span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>  ss_res <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> <span class="fu">mean</span>(SR_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((ref_vals <span class="sc">-</span> <span class="fu">mean</span>(ref_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
 <span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (ss_res <span class="sc">/</span> ss_tot)</span>
 <span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>  R2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(R2_vals, R2)</span>
 <span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a></span>
@@ -571,7 +571,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R²</span></span>
 <span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>  ss_res <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> <span class="fu">mean</span>(SR_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((ref_vals <span class="sc">-</span> <span class="fu">mean</span>(ref_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
 <span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (ss_res <span class="sc">/</span> ss_tot)</span>
 <span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>  R2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(R2_vals, R2)</span>
 <span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a></span>
@@ -591,18 +591,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>rmse_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(rmse_vals)</span>
 <span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>r2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(r2_vals)</span>
-<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>psnr_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(psnr_vals)</span>
-<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>ssim_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(ssim_vals)</span>
-<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotation text</span></span>
-<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a>metrics_text <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
-<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"RMSE = "</span>, <span class="fu">round</span>(rmse_avg, <span class="dv">2</span>)),</span>
-<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"r² = "</span>, <span class="fu">round</span>(r2_avg, <span class="dv">3</span>)),</span>
-<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"R² = "</span>, <span class="fu">round</span>(R2_avg, <span class="dv">3</span>)),</span>
-<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"PSNR = "</span>, <span class="fu">round</span>(psnr_avg, <span class="dv">2</span>), <span class="st">" dB"</span>),</span>
-<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SSIM = "</span>, <span class="fu">round</span>(ssim_avg, <span class="dv">3</span>)),</span>
-<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
-<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>R2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(R2_vals)</span>
+<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>psnr_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(psnr_vals)</span>
+<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a>ssim_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(ssim_vals)</span>
+<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotation text</span></span>
+<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>metrics_text <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
+<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"RMSE = "</span>, <span class="fu">round</span>(rmse_avg, <span class="dv">2</span>)),</span>
+<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"r² = "</span>, <span class="fu">round</span>(r2_avg, <span class="dv">3</span>)),</span>
+<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"R² = "</span>, <span class="fu">round</span>(R2_avg, <span class="dv">3</span>)),</span>
+<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"PSNR = "</span>, <span class="fu">round</span>(psnr_avg, <span class="dv">2</span>), <span class="st">" dB"</span>),</span>
+<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SSIM = "</span>, <span class="fu">round</span>(ssim_avg, <span class="dv">3</span>)),</span>
+<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
+<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Visualize.</p>
@@ -655,34 +656,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Re-scale the image with the higher resolution to match the resolution of the other. If your ref_map has the higher resolution, un-comment the row below and switch places of 'SR_map' and 'ref_map' in the line for resampling (down-scaling the resolution) of the SR_map/ref_map. </span></span>
 <span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>SR_original <span class="ot">&lt;-</span> SR_map</span>
 <span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="co"># ref_original &lt;- ref_map</span></span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>SR_map <span class="ot">&lt;-</span> <span class="fu">resample</span>(SR_map, ref_map, <span class="at">method =</span> <span class="st">"bilinear"</span>)</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="co">#ref_map &lt;- resample(ref_map,SR_map, method = "bilinear")</span></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="do">## Make sure the two maps contain the same bands. Check which bands your two maps have by un-commenting the two lines below</span></span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(SR_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>SR_map <span class="ot">&lt;-</span> <span class="fu">resample</span>(SR_map, ref_map, <span class="at">method =</span> <span class="st">"bilinear"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+|---------|---------|---------|---------|
+=========================================
+                                          </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ref_map &lt;- resample(ref_map,SR_map, method = "bilinear")</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Make sure the two maps contain the same bands. Check which bands your two maps have by un-commenting the two lines below</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(SR_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "B02" "B03" "B04" "B05" "B06" "B07" "B08" "B8A" "B11" "B12"</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(ref_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(ref_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "B02" "B03" "B04" "B05" "B06" "B07" "B08" "B8A" "B11" "B12"</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">## If necessary, crop out the common bands from whichever file has the more bands by un-commenting one of the two lines below. The first line will extract the bands existing in SR_map from the ref_map (use this for evaluating the Metria image), and the second line does to opposite.</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co">#ref_map &lt;- ref_map[[names(SR_map)]]</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>SR_map <span class="ot">&lt;-</span> SR_map[[<span class="fu">names</span>(ref_map)]]</span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(SR_map) <span class="sc">==</span> <span class="fu">names</span>(ref_map),</span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(<span class="fu">res</span>(SR_map) <span class="sc">==</span> <span class="fu">res</span>(ref_map))</span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>bands <span class="ot">&lt;-</span> <span class="fu">names</span>(ref_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="do">## If necessary, crop out the common bands from whichever file has the more bands by un-commenting one of the two lines below. The first line will extract the bands existing in SR_map from the ref_map (use this for evaluating the Metria image), and the second line does to opposite.</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="co">#ref_map &lt;- ref_map[[names(SR_map)]]</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>SR_map <span class="ot">&lt;-</span> SR_map[[<span class="fu">names</span>(ref_map)]]</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(SR_map) <span class="sc">==</span> <span class="fu">names</span>(ref_map),</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(<span class="fu">res</span>(SR_map) <span class="sc">==</span> <span class="fu">res</span>(ref_map))</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>bands <span class="ot">&lt;-</span> <span class="fu">names</span>(ref_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><strong>Optional: Visual comparison of the maps over orthophoto</strong></p>
@@ -690,37 +700,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># library(leafem)</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># library(leaflet)</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ref_RGB &lt;- clamp(ref_map[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)</span></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># SR_RGB &lt;- clamp(SR_map[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)</span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co"># SR_original_RGB &lt;- clamp(SR_original[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="co"># # SR_match_RGB &lt;- clamp(SR_match[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)</span></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="co"># leaflet() %&gt;%</span></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   addWMSTiles(</span></span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     baseUrl = "http://url/to/local/orthophoto/wms",</span></span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     layers = "layer-name-of-wms",</span></span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     options = WMSTileOptions(</span></span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="co">#       format = "image/jpeg",</span></span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a><span class="co">#       transparent = FALSE</span></span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="co">#     ),</span></span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a><span class="co">#     group = "Orthophoto"</span></span>
-<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a><span class="co">#   ) %&gt;%</span></span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a><span class="co">#   addRasterRGB(ref_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Reference map") %&gt;%</span></span>
-<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a><span class="co">#   addRasterRGB(SR_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (downscaled) map") %&gt;%</span></span>
-<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a><span class="co">#   addRasterRGB(SR_original_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (original) map") %&gt;%</span></span>
-<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a><span class="co">#   # addRasterRGB(SR_match_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (histogram-matched) map") %&gt;%</span></span>
-<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a><span class="co">#   addLayersControl(</span></span>
-<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a><span class="co">#     baseGroups = c("Orthophoto"),</span></span>
-<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a><span class="co">#     overlayGroups = c(</span></span>
-<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a><span class="co">#       "Reference map", </span></span>
-<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a><span class="co">#       "Super-resolution (downscaled) map", </span></span>
-<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a><span class="co">#       # "Super-resolution (histogram-matched) map",</span></span>
-<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a><span class="co">#       "Super-resolution (original) map"</span></span>
-<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a><span class="co">#       ),</span></span>
-<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a><span class="co">#     options = layersControlOptions(collapsed = FALSE)</span></span>
-<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a><span class="co">#   )</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># library(leafem)</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co"># library(leaflet)</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ref_RGB &lt;- clamp(ref_map[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="co"># SR_RGB &lt;- clamp(SR_map[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="co"># SR_original_RGB &lt;- clamp(SR_original[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="co"># # SR_match_RGB &lt;- clamp(SR_match[[c("B02", "B03", "B04")]] * 255 / 10000, lower = 0, upper = 255)</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="co"># leaflet() %&gt;%</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   addWMSTiles(</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     baseUrl = "http://url/to/local/orthophoto/wms",</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     layers = "layer-name-of-wms",</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     options = WMSTileOptions(</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a><span class="co">#       format = "image/jpeg",</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a><span class="co">#       transparent = FALSE</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a><span class="co">#     ),</span></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a><span class="co">#     group = "Orthophoto"</span></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a><span class="co">#   ) %&gt;%</span></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a><span class="co">#   addRasterRGB(ref_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Reference map") %&gt;%</span></span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a><span class="co">#   addRasterRGB(SR_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (downscaled) map") %&gt;%</span></span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a><span class="co">#   addRasterRGB(SR_original_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (original) map") %&gt;%</span></span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a><span class="co">#   # addRasterRGB(SR_match_RGB[[1:3]], r = 3, g = 2, b = 1, group = "Super-resolution (histogram-matched) map") %&gt;%</span></span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a><span class="co">#   addLayersControl(</span></span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a><span class="co">#     baseGroups = c("Orthophoto"),</span></span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a><span class="co">#     overlayGroups = c(</span></span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a><span class="co">#       "Reference map", </span></span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a><span class="co">#       "Super-resolution (downscaled) map", </span></span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a><span class="co">#       # "Super-resolution (histogram-matched) map",</span></span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a><span class="co">#       "Super-resolution (original) map"</span></span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a><span class="co">#       ),</span></span>
+<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a><span class="co">#     options = layersControlOptions(collapsed = FALSE)</span></span>
+<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a><span class="co">#   )</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><strong>Optional: Plot histograms of RGB bands</strong></p>
@@ -728,23 +738,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot_histograms &lt;- function(raster_obj, title_prefix = "Raster") {</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   par(mfrow = c(1, nlyr(raster_obj)))  # 1 row, N columns</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   for (i in 1:nlyr(raster_obj)) {</span></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     hist(values(raster_obj[[i]]), </span></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="co">#          breaks = 100, </span></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="co">#          main = paste(title_prefix, "- B", i),</span></span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="co">#          xlab = "Pixel Values", </span></span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="co">#          col = "gray", </span></span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="co">#          border = "black")</span></span>
-<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="co">#   }</span></span>
-<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a><span class="co">#   par(mfrow = c(1,1))  # Reset layout</span></span>
-<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a><span class="co"># }</span></span>
-<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a><span class="co"># plot_histograms(ref_RGB, "Ref")</span></span>
-<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a><span class="co"># plot_histograms(SR_RGB, "SR-downsc.")</span></span>
-<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a><span class="co"># plot_histograms(SR_original_RGB, "SR-orig.")</span></span>
-<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a><span class="co"># # plot_histograms(SR_match_RGB, "SR-match")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot_histograms &lt;- function(raster_obj, title_prefix = "Raster") {</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   par(mfrow = c(1, nlyr(raster_obj)))  # 1 row, N columns</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   for (i in 1:nlyr(raster_obj)) {</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     hist(values(raster_obj[[i]]), </span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="co">#          breaks = 100, </span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co">#          main = paste(title_prefix, "- B", i),</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="co">#          xlab = "Pixel Values", </span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="co">#          col = "gray", </span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="co">#          border = "black")</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a><span class="co">#   }</span></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a><span class="co">#   par(mfrow = c(1,1))  # Reset layout</span></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a><span class="co"># }</span></span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a><span class="co"># plot_histograms(ref_RGB, "Ref")</span></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a><span class="co"># plot_histograms(SR_RGB, "SR-downsc.")</span></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a><span class="co"># plot_histograms(SR_original_RGB, "SR-orig.")</span></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a><span class="co"># # plot_histograms(SR_match_RGB, "SR-match")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="no-histogram-matching-1" class="level4" data-number="3.0.3">
@@ -755,127 +765,127 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>SR_plot <span class="ot">&lt;-</span> SR_map</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SR_plot &lt;- SR_match</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>ref_plot <span class="ot">&lt;-</span> ref_map</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Stack the super-resolution and ref maps</span></span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>stack_names <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SR_"</span>, bands),</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"ref_"</span>, bands)</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>stack <span class="ot">&lt;-</span> <span class="fu">c</span>(SR_plot, ref_plot)</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(stack) <span class="ot">&lt;-</span> stack_names</span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert stacks to data frames for pixel comparison</span></span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(stack, <span class="at">xy =</span> <span class="cn">TRUE</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare the super-resolution and sentinel-2 images for plotting</span></span>
-<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (band <span class="cf">in</span> bands) {</span>
-<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>  SR_band <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"SR_"</span>, band)</span>
-<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>  ref_band <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"ref_"</span>, band)</span>
-<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(<span class="fu">c</span>(SR_band, ref_band) <span class="sc">%in%</span> <span class="fu">colnames</span>(df))) <span class="cf">next</span></span>
-<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine pixel values into a long-format dataframe</span></span>
-<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>  plot_data <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>    plot_data,</span>
-<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
-<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">SR =</span> df[[SR_band]],</span>
-<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">ref =</span> df[[ref_band]],</span>
-<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">Band =</span> <span class="fu">paste0</span>(band)</span>
-<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>SR_plot <span class="ot">&lt;-</span> SR_map</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SR_plot &lt;- SR_match</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>ref_plot <span class="ot">&lt;-</span> ref_map</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Stack the super-resolution and ref maps</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>stack_names <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SR_"</span>, bands),</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"ref_"</span>, bands)</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>stack <span class="ot">&lt;-</span> <span class="fu">c</span>(SR_plot, ref_plot)</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(stack) <span class="ot">&lt;-</span> stack_names</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert stacks to data frames for pixel comparison</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(stack, <span class="at">xy =</span> <span class="cn">TRUE</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare the super-resolution and sentinel-2 images for plotting</span></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (band <span class="cf">in</span> bands) {</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>  SR_band <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"SR_"</span>, band)</span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>  ref_band <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"ref_"</span>, band)</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(<span class="fu">c</span>(SR_band, ref_band) <span class="sc">%in%</span> <span class="fu">colnames</span>(df))) <span class="cf">next</span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine pixel values into a long-format dataframe</span></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>  plot_data <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>    plot_data,</span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">SR =</span> df[[SR_band]],</span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">ref =</span> df[[ref_band]],</span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">Band =</span> <span class="fu">paste0</span>(band)</span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb31-28"><a href="#cb31-28" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Filter out NA values before proceeding.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix if previous script caused an error:</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>SR_plot <span class="ot">&lt;-</span> <span class="fu">ifel</span>(<span class="fu">is.na</span>(ref_plot), <span class="cn">NA</span>, SR_plot)</span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>ref_plot <span class="ot">&lt;-</span> <span class="fu">ifel</span>(<span class="fu">is.na</span>(SR_plot), <span class="cn">NA</span>, ref_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix if previous script caused an error:</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>SR_plot <span class="ot">&lt;-</span> <span class="fu">ifel</span>(<span class="fu">is.na</span>(ref_plot), <span class="cn">NA</span>, SR_plot)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>ref_plot <span class="ot">&lt;-</span> <span class="fu">ifel</span>(<span class="fu">is.na</span>(SR_plot), <span class="cn">NA</span>, ref_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Calculate the metrics.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix if previous script caused an error:</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>rmse_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>r2_vals   <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>R2_vals   <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>psnr_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>ssim_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>max_pixel <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (band <span class="cf">in</span> bands) {</span>
-<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>  SR_vals  <span class="ot">&lt;-</span> <span class="fu">values</span>(SR_plot[[band]], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>  ref_vals <span class="ot">&lt;-</span> <span class="fu">values</span>(ref_plot[[band]], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># RMSE</span></span>
-<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>  rmse <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>  rmse_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(rmse_vals, rmse)</span>
-<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># r²</span></span>
-<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>  r2 <span class="ot">&lt;-</span> <span class="fu">cor</span>(SR_vals, ref_vals)<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>  r2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(r2_vals, r2)</span>
-<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R²</span></span>
-<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a>  ss_res <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> <span class="fu">mean</span>(SR_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (ss_res <span class="sc">/</span> ss_tot)</span>
-<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>  R2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(R2_vals, R2)</span>
-<span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-28"><a href="#cb31-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PSNR</span></span>
-<span id="cb31-29"><a href="#cb31-29" aria-hidden="true" tabindex="-1"></a>  psnr <span class="ot">&lt;-</span> <span class="dv">20</span> <span class="sc">*</span> <span class="fu">log10</span>(max_pixel <span class="sc">/</span> rmse)</span>
-<span id="cb31-30"><a href="#cb31-30" aria-hidden="true" tabindex="-1"></a>  psnr_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(psnr_vals, psnr)</span>
-<span id="cb31-31"><a href="#cb31-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-32"><a href="#cb31-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># --- SSIM (normalize to 0-1) ---</span></span>
-<span id="cb31-33"><a href="#cb31-33" aria-hidden="true" tabindex="-1"></a>  SR_norm  <span class="ot">&lt;-</span> (SR_plot[[band]]) <span class="sc">/</span> max_pixel</span>
-<span id="cb31-34"><a href="#cb31-34" aria-hidden="true" tabindex="-1"></a>  ref_norm <span class="ot">&lt;-</span> (ref_plot[[band]]) <span class="sc">/</span> max_pixel</span>
-<span id="cb31-35"><a href="#cb31-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-36"><a href="#cb31-36" aria-hidden="true" tabindex="-1"></a>  ssim_out  <span class="ot">&lt;-</span> <span class="fu">capture.output</span>(<span class="fu">ssim_raster</span>(SR_norm, ref_norm))</span>
-<span id="cb31-37"><a href="#cb31-37" aria-hidden="true" tabindex="-1"></a>  ssim_line <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">"SSIM:"</span>, ssim_out, <span class="at">value =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span>]</span>
-<span id="cb31-38"><a href="#cb31-38" aria-hidden="true" tabindex="-1"></a>  ssim_val  <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">".*SSIM: ([0-9.]+).*"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">1"</span>, ssim_line))</span>
-<span id="cb31-39"><a href="#cb31-39" aria-hidden="true" tabindex="-1"></a>  ssim_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(ssim_vals, ssim_val)</span>
-<span id="cb31-40"><a href="#cb31-40" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb31-41"><a href="#cb31-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-42"><a href="#cb31-42" aria-hidden="true" tabindex="-1"></a>rmse_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(rmse_vals)</span>
-<span id="cb31-43"><a href="#cb31-43" aria-hidden="true" tabindex="-1"></a>r2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(r2_vals)</span>
-<span id="cb31-44"><a href="#cb31-44" aria-hidden="true" tabindex="-1"></a>R2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(R2_vals)</span>
-<span id="cb31-45"><a href="#cb31-45" aria-hidden="true" tabindex="-1"></a>psnr_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(psnr_vals)</span>
-<span id="cb31-46"><a href="#cb31-46" aria-hidden="true" tabindex="-1"></a>ssim_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(ssim_vals)</span>
-<span id="cb31-47"><a href="#cb31-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-48"><a href="#cb31-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotation text</span></span>
-<span id="cb31-49"><a href="#cb31-49" aria-hidden="true" tabindex="-1"></a>metrics_text <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
-<span id="cb31-50"><a href="#cb31-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"RMSE = "</span>, <span class="fu">round</span>(rmse_avg, <span class="dv">2</span>)),</span>
-<span id="cb31-51"><a href="#cb31-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"r² = "</span>, <span class="fu">round</span>(r2_avg, <span class="dv">3</span>)),</span>
-<span id="cb31-52"><a href="#cb31-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"R² = "</span>, <span class="fu">round</span>(R2_avg, <span class="dv">3</span>)),</span>
-<span id="cb31-53"><a href="#cb31-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"PSNR = "</span>, <span class="fu">round</span>(psnr_avg, <span class="dv">2</span>), <span class="st">" dB"</span>),</span>
-<span id="cb31-54"><a href="#cb31-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SSIM = "</span>, <span class="fu">round</span>(ssim_avg, <span class="dv">3</span>)),</span>
-<span id="cb31-55"><a href="#cb31-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
-<span id="cb31-56"><a href="#cb31-56" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix if previous script caused an error:</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>rmse_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>r2_vals   <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>R2_vals   <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>psnr_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>ssim_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>max_pixel <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (band <span class="cf">in</span> bands) {</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>  SR_vals  <span class="ot">&lt;-</span> <span class="fu">values</span>(SR_plot[[band]], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>  ref_vals <span class="ot">&lt;-</span> <span class="fu">values</span>(ref_plot[[band]], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># RMSE</span></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>  rmse <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>  rmse_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(rmse_vals, rmse)</span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># r²</span></span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>  r2 <span class="ot">&lt;-</span> <span class="fu">cor</span>(SR_vals, ref_vals)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>  r2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(r2_vals, r2)</span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R²</span></span>
+<span id="cb33-23"><a href="#cb33-23" aria-hidden="true" tabindex="-1"></a>  ss_res <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb33-24"><a href="#cb33-24" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((ref_vals <span class="sc">-</span> <span class="fu">mean</span>(ref_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb33-25"><a href="#cb33-25" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (ss_res <span class="sc">/</span> ss_tot)</span>
+<span id="cb33-26"><a href="#cb33-26" aria-hidden="true" tabindex="-1"></a>  R2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(R2_vals, R2)</span>
+<span id="cb33-27"><a href="#cb33-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-28"><a href="#cb33-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PSNR</span></span>
+<span id="cb33-29"><a href="#cb33-29" aria-hidden="true" tabindex="-1"></a>  psnr <span class="ot">&lt;-</span> <span class="dv">20</span> <span class="sc">*</span> <span class="fu">log10</span>(max_pixel <span class="sc">/</span> rmse)</span>
+<span id="cb33-30"><a href="#cb33-30" aria-hidden="true" tabindex="-1"></a>  psnr_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(psnr_vals, psnr)</span>
+<span id="cb33-31"><a href="#cb33-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-32"><a href="#cb33-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># --- SSIM (normalize to 0-1) ---</span></span>
+<span id="cb33-33"><a href="#cb33-33" aria-hidden="true" tabindex="-1"></a>  SR_norm  <span class="ot">&lt;-</span> (SR_plot[[band]]) <span class="sc">/</span> max_pixel</span>
+<span id="cb33-34"><a href="#cb33-34" aria-hidden="true" tabindex="-1"></a>  ref_norm <span class="ot">&lt;-</span> (ref_plot[[band]]) <span class="sc">/</span> max_pixel</span>
+<span id="cb33-35"><a href="#cb33-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-36"><a href="#cb33-36" aria-hidden="true" tabindex="-1"></a>  ssim_out  <span class="ot">&lt;-</span> <span class="fu">capture.output</span>(<span class="fu">ssim_raster</span>(SR_norm, ref_norm))</span>
+<span id="cb33-37"><a href="#cb33-37" aria-hidden="true" tabindex="-1"></a>  ssim_line <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">"SSIM:"</span>, ssim_out, <span class="at">value =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span>]</span>
+<span id="cb33-38"><a href="#cb33-38" aria-hidden="true" tabindex="-1"></a>  ssim_val  <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">".*SSIM: ([0-9.]+).*"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">1"</span>, ssim_line))</span>
+<span id="cb33-39"><a href="#cb33-39" aria-hidden="true" tabindex="-1"></a>  ssim_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(ssim_vals, ssim_val)</span>
+<span id="cb33-40"><a href="#cb33-40" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb33-41"><a href="#cb33-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-42"><a href="#cb33-42" aria-hidden="true" tabindex="-1"></a>rmse_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(rmse_vals)</span>
+<span id="cb33-43"><a href="#cb33-43" aria-hidden="true" tabindex="-1"></a>r2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(r2_vals)</span>
+<span id="cb33-44"><a href="#cb33-44" aria-hidden="true" tabindex="-1"></a>R2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(R2_vals)</span>
+<span id="cb33-45"><a href="#cb33-45" aria-hidden="true" tabindex="-1"></a>psnr_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(psnr_vals)</span>
+<span id="cb33-46"><a href="#cb33-46" aria-hidden="true" tabindex="-1"></a>ssim_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(ssim_vals)</span>
+<span id="cb33-47"><a href="#cb33-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-48"><a href="#cb33-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotation text</span></span>
+<span id="cb33-49"><a href="#cb33-49" aria-hidden="true" tabindex="-1"></a>metrics_text <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
+<span id="cb33-50"><a href="#cb33-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"RMSE = "</span>, <span class="fu">round</span>(rmse_avg, <span class="dv">2</span>)),</span>
+<span id="cb33-51"><a href="#cb33-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"r² = "</span>, <span class="fu">round</span>(r2_avg, <span class="dv">3</span>)),</span>
+<span id="cb33-52"><a href="#cb33-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"R² = "</span>, <span class="fu">round</span>(R2_avg, <span class="dv">3</span>)),</span>
+<span id="cb33-53"><a href="#cb33-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"PSNR = "</span>, <span class="fu">round</span>(psnr_avg, <span class="dv">2</span>), <span class="st">" dB"</span>),</span>
+<span id="cb33-54"><a href="#cb33-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SSIM = "</span>, <span class="fu">round</span>(ssim_avg, <span class="dv">3</span>)),</span>
+<span id="cb33-55"><a href="#cb33-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
+<span id="cb33-56"><a href="#cb33-56" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Visualize.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scatterplot the values and add the metrics</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plot_data, <span class="fu">aes</span>(<span class="at">x =</span> ref, <span class="at">y =</span> SR, <span class="at">color =</span> Band)) <span class="sc">+</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">size =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">override.aes =</span> <span class="fu">list</span>(<span class="at">size =</span> <span class="dv">3</span>))) <span class="sc">+</span></span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">option =</span> <span class="st">"B"</span>) <span class="sc">+</span></span>
-<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Super-resolution vs reference map"</span>,</span>
-<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Reference map"</span>,</span>
-<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Super-resolution map"</span>,</span>
-<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Band"</span></span>
-<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
-<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="cn">Inf</span>, <span class="at">y =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">hjust =</span> <span class="fl">1.1</span>, <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>,</span>
-<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>           <span class="at">label =</span> metrics_text, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">color =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scatterplot the values and add the metrics</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plot_data, <span class="fu">aes</span>(<span class="at">x =</span> ref, <span class="at">y =</span> SR, <span class="at">color =</span> Band)) <span class="sc">+</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">size =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">override.aes =</span> <span class="fu">list</span>(<span class="at">size =</span> <span class="dv">3</span>))) <span class="sc">+</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">option =</span> <span class="st">"B"</span>) <span class="sc">+</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Super-resolution vs reference map"</span>,</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Reference map"</span>,</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Super-resolution map"</span>,</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Band"</span></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="cn">Inf</span>, <span class="at">y =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">hjust =</span> <span class="fl">1.1</span>, <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>,</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>           <span class="at">label =</span> metrics_text, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">color =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -893,28 +903,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>hist_match <span class="ot">&lt;-</span> <span class="cf">function</span>(target_spat, ref_spat) {</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  matched_spat <span class="ot">&lt;-</span> target_spat</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nlyr</span>(target_spat)) {</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    target_vals <span class="ot">&lt;-</span> <span class="fu">values</span>(target_spat[[i]], <span class="at">mat =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    ref_vals <span class="ot">&lt;-</span> <span class="fu">values</span>(ref_spat[[i]], <span class="at">mat =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    target_vals <span class="ot">&lt;-</span> target_vals[<span class="sc">!</span><span class="fu">is.na</span>(target_vals)]</span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    ref_vals <span class="ot">&lt;-</span> ref_vals[<span class="sc">!</span><span class="fu">is.na</span>(ref_vals)]</span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    target_ecdf <span class="ot">&lt;-</span> <span class="fu">ecdf</span>(target_vals)</span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    ref_quant <span class="ot">&lt;-</span> <span class="fu">quantile</span>(ref_vals, <span class="at">probs =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="dv">1000</span>), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    map_vals <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>      p <span class="ot">&lt;-</span> <span class="fu">target_ecdf</span>(x)</span>
-<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">approx</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="dv">1000</span>), ref_quant, <span class="at">xout =</span> p, <span class="at">rule =</span> <span class="dv">2</span>)<span class="sc">$</span>y</span>
-<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>    matched_vals <span class="ot">&lt;-</span> <span class="fu">map_vals</span>(<span class="fu">values</span>(target_spat[[i]], <span class="at">mat =</span> <span class="cn">FALSE</span>))</span>
-<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>    out_layer <span class="ot">&lt;-</span> target_spat[[i]]</span>
-<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">values</span>(out_layer) <span class="ot">&lt;-</span> matched_vals</span>
-<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>    matched_spat[[i]] <span class="ot">&lt;-</span> out_layer</span>
-<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(matched_spat)</span>
-<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>SR_match <span class="ot">&lt;-</span> <span class="fu">hist_match</span>(SR_map, ref_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>hist_match <span class="ot">&lt;-</span> <span class="cf">function</span>(target_spat, ref_spat) {</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  matched_spat <span class="ot">&lt;-</span> target_spat</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nlyr</span>(target_spat)) {</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    target_vals <span class="ot">&lt;-</span> <span class="fu">values</span>(target_spat[[i]], <span class="at">mat =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    ref_vals <span class="ot">&lt;-</span> <span class="fu">values</span>(ref_spat[[i]], <span class="at">mat =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    target_vals <span class="ot">&lt;-</span> target_vals[<span class="sc">!</span><span class="fu">is.na</span>(target_vals)]</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    ref_vals <span class="ot">&lt;-</span> ref_vals[<span class="sc">!</span><span class="fu">is.na</span>(ref_vals)]</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    target_ecdf <span class="ot">&lt;-</span> <span class="fu">ecdf</span>(target_vals)</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>    ref_quant <span class="ot">&lt;-</span> <span class="fu">quantile</span>(ref_vals, <span class="at">probs =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="dv">1000</span>), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>    map_vals <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>      p <span class="ot">&lt;-</span> <span class="fu">target_ecdf</span>(x)</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">approx</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="dv">1000</span>), ref_quant, <span class="at">xout =</span> p, <span class="at">rule =</span> <span class="dv">2</span>)<span class="sc">$</span>y</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>    matched_vals <span class="ot">&lt;-</span> <span class="fu">map_vals</span>(<span class="fu">values</span>(target_spat[[i]], <span class="at">mat =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>    out_layer <span class="ot">&lt;-</span> target_spat[[i]]</span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">values</span>(out_layer) <span class="ot">&lt;-</span> matched_vals</span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>    matched_spat[[i]] <span class="ot">&lt;-</span> out_layer</span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(matched_spat)</span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>SR_match <span class="ot">&lt;-</span> <span class="fu">hist_match</span>(SR_map, ref_map)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="create-stack-calculate-metrics-and-plot-data-3" class="level5" data-number="3.0.4.1">
@@ -923,126 +933,127 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co">#SR_plot &lt;- SR_map</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>SR_plot <span class="ot">&lt;-</span> SR_match</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>ref_plot <span class="ot">&lt;-</span> ref_map</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Stack the super-resolution and ref maps</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>stack_names <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SR_"</span>, bands),</span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"ref_"</span>, bands)</span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>stack <span class="ot">&lt;-</span> <span class="fu">c</span>(SR_plot, ref_plot)</span>
-<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(stack) <span class="ot">&lt;-</span> stack_names</span>
-<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert stacks to data frames for pixel comparison</span></span>
-<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(stack, <span class="at">xy =</span> <span class="cn">TRUE</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare the super-resolution and sentinel-2 images for plotting</span></span>
-<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
-<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (band <span class="cf">in</span> bands) {</span>
-<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>  SR_band <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"SR_"</span>, band)</span>
-<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>  ref_band <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"ref_"</span>, band)</span>
-<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(<span class="fu">c</span>(SR_band, ref_band) <span class="sc">%in%</span> <span class="fu">colnames</span>(df))) <span class="cf">next</span></span>
-<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine pixel values into a long-format dataframe</span></span>
-<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>  plot_data <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>    plot_data,</span>
-<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
-<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">SR =</span> df[[SR_band]],</span>
-<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">ref =</span> df[[ref_band]],</span>
-<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">Band =</span> <span class="fu">paste0</span>(band)</span>
-<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb34-27"><a href="#cb34-27" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb34-28"><a href="#cb34-28" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">#SR_plot &lt;- SR_map</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>SR_plot <span class="ot">&lt;-</span> SR_match</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>ref_plot <span class="ot">&lt;-</span> ref_map</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Stack the super-resolution and ref maps</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>stack_names <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SR_"</span>, bands),</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"ref_"</span>, bands)</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>stack <span class="ot">&lt;-</span> <span class="fu">c</span>(SR_plot, ref_plot)</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(stack) <span class="ot">&lt;-</span> stack_names</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert stacks to data frames for pixel comparison</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(stack, <span class="at">xy =</span> <span class="cn">TRUE</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare the super-resolution and sentinel-2 images for plotting</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (band <span class="cf">in</span> bands) {</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>  SR_band <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"SR_"</span>, band)</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>  ref_band <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"ref_"</span>, band)</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(<span class="fu">c</span>(SR_band, ref_band) <span class="sc">%in%</span> <span class="fu">colnames</span>(df))) <span class="cf">next</span></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine pixel values into a long-format dataframe</span></span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>  plot_data <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>    plot_data,</span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">SR =</span> df[[SR_band]],</span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">ref =</span> df[[ref_band]],</span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">Band =</span> <span class="fu">paste0</span>(band)</span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Filter out the NA values.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix if previous script caused an error:</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>SR_plot <span class="ot">&lt;-</span> <span class="fu">ifel</span>(<span class="fu">is.na</span>(ref_plot), <span class="cn">NA</span>, SR_plot)</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>ref_plot <span class="ot">&lt;-</span> <span class="fu">ifel</span>(<span class="fu">is.na</span>(SR_plot), <span class="cn">NA</span>, ref_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix if previous script caused an error:</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>SR_plot <span class="ot">&lt;-</span> <span class="fu">ifel</span>(<span class="fu">is.na</span>(ref_plot), <span class="cn">NA</span>, SR_plot)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>ref_plot <span class="ot">&lt;-</span> <span class="fu">ifel</span>(<span class="fu">is.na</span>(SR_plot), <span class="cn">NA</span>, ref_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Calculate the metrics.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix if previous script caused an error:</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>rmse_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>r2_vals   <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>R2_vals   <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>psnr_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>ssim_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>max_pixel <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (band <span class="cf">in</span> bands) {</span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>  SR_vals  <span class="ot">&lt;-</span> <span class="fu">values</span>(SR_plot[[band]], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  ref_vals <span class="ot">&lt;-</span> <span class="fu">values</span>(ref_plot[[band]], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># RMSE</span></span>
-<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>  rmse <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>  rmse_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(rmse_vals, rmse)</span>
-<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># r²</span></span>
-<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>  r2 <span class="ot">&lt;-</span> <span class="fu">cor</span>(SR_vals, ref_vals)<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>  r2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(r2_vals, r2)</span>
-<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R²</span></span>
-<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>  ss_res <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> <span class="fu">mean</span>(SR_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (ss_res <span class="sc">/</span> ss_tot)</span>
-<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>  R2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(R2_vals, R2)</span>
-<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PSNR</span></span>
-<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a>  psnr <span class="ot">&lt;-</span> <span class="dv">20</span> <span class="sc">*</span> <span class="fu">log10</span>(max_pixel <span class="sc">/</span> rmse)</span>
-<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a>  psnr_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(psnr_vals, psnr)</span>
-<span id="cb36-31"><a href="#cb36-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-32"><a href="#cb36-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># --- SSIM (normalize to 0-1) ---</span></span>
-<span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a>  SR_norm  <span class="ot">&lt;-</span> (SR_plot[[band]]) <span class="sc">/</span> max_pixel</span>
-<span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a>  ref_norm <span class="ot">&lt;-</span> (ref_plot[[band]]) <span class="sc">/</span> max_pixel</span>
-<span id="cb36-35"><a href="#cb36-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-36"><a href="#cb36-36" aria-hidden="true" tabindex="-1"></a>  ssim_out  <span class="ot">&lt;-</span> <span class="fu">capture.output</span>(<span class="fu">ssim_raster</span>(SR_norm, ref_norm))</span>
-<span id="cb36-37"><a href="#cb36-37" aria-hidden="true" tabindex="-1"></a>  ssim_line <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">"SSIM:"</span>, ssim_out, <span class="at">value =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span>]</span>
-<span id="cb36-38"><a href="#cb36-38" aria-hidden="true" tabindex="-1"></a>  ssim_val  <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">".*SSIM: ([0-9.]+).*"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">1"</span>, ssim_line))</span>
-<span id="cb36-39"><a href="#cb36-39" aria-hidden="true" tabindex="-1"></a>  ssim_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(ssim_vals, ssim_val)</span>
-<span id="cb36-40"><a href="#cb36-40" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb36-41"><a href="#cb36-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-42"><a href="#cb36-42" aria-hidden="true" tabindex="-1"></a>rmse_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(rmse_vals)</span>
-<span id="cb36-43"><a href="#cb36-43" aria-hidden="true" tabindex="-1"></a>r2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(r2_vals)</span>
-<span id="cb36-44"><a href="#cb36-44" aria-hidden="true" tabindex="-1"></a>psnr_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(psnr_vals)</span>
-<span id="cb36-45"><a href="#cb36-45" aria-hidden="true" tabindex="-1"></a>ssim_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(ssim_vals)</span>
-<span id="cb36-46"><a href="#cb36-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-47"><a href="#cb36-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotation text</span></span>
-<span id="cb36-48"><a href="#cb36-48" aria-hidden="true" tabindex="-1"></a>metrics_text <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
-<span id="cb36-49"><a href="#cb36-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"RMSE = "</span>, <span class="fu">round</span>(rmse_avg, <span class="dv">2</span>)),</span>
-<span id="cb36-50"><a href="#cb36-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"r² = "</span>, <span class="fu">round</span>(r2_avg, <span class="dv">3</span>)),</span>
-<span id="cb36-51"><a href="#cb36-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"R² = "</span>, <span class="fu">round</span>(R2_avg, <span class="dv">3</span>)),</span>
-<span id="cb36-52"><a href="#cb36-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"PSNR = "</span>, <span class="fu">round</span>(psnr_avg, <span class="dv">2</span>), <span class="st">" dB"</span>),</span>
-<span id="cb36-53"><a href="#cb36-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SSIM = "</span>, <span class="fu">round</span>(ssim_avg, <span class="dv">3</span>)),</span>
-<span id="cb36-54"><a href="#cb36-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
-<span id="cb36-55"><a href="#cb36-55" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix if previous script caused an error:</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>rmse_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>r2_vals   <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>R2_vals   <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>psnr_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>ssim_vals <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>max_pixel <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (band <span class="cf">in</span> bands) {</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>  SR_vals  <span class="ot">&lt;-</span> <span class="fu">values</span>(SR_plot[[band]], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>  ref_vals <span class="ot">&lt;-</span> <span class="fu">values</span>(ref_plot[[band]], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># RMSE</span></span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>  rmse <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a>  rmse_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(rmse_vals, rmse)</span>
+<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># r²</span></span>
+<span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a>  r2 <span class="ot">&lt;-</span> <span class="fu">cor</span>(SR_vals, ref_vals)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb38-20"><a href="#cb38-20" aria-hidden="true" tabindex="-1"></a>  r2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(r2_vals, r2)</span>
+<span id="cb38-21"><a href="#cb38-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb38-22"><a href="#cb38-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R²</span></span>
+<span id="cb38-23"><a href="#cb38-23" aria-hidden="true" tabindex="-1"></a>  ss_res <span class="ot">&lt;-</span> <span class="fu">sum</span>((SR_vals <span class="sc">-</span> ref_vals)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb38-24"><a href="#cb38-24" aria-hidden="true" tabindex="-1"></a>  ss_tot <span class="ot">&lt;-</span> <span class="fu">sum</span>((ref_vals <span class="sc">-</span> <span class="fu">mean</span>(ref_vals))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb38-25"><a href="#cb38-25" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (ss_res <span class="sc">/</span> ss_tot)</span>
+<span id="cb38-26"><a href="#cb38-26" aria-hidden="true" tabindex="-1"></a>  R2_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(R2_vals, R2)</span>
+<span id="cb38-27"><a href="#cb38-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-28"><a href="#cb38-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># PSNR</span></span>
+<span id="cb38-29"><a href="#cb38-29" aria-hidden="true" tabindex="-1"></a>  psnr <span class="ot">&lt;-</span> <span class="dv">20</span> <span class="sc">*</span> <span class="fu">log10</span>(max_pixel <span class="sc">/</span> rmse)</span>
+<span id="cb38-30"><a href="#cb38-30" aria-hidden="true" tabindex="-1"></a>  psnr_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(psnr_vals, psnr)</span>
+<span id="cb38-31"><a href="#cb38-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-32"><a href="#cb38-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># --- SSIM (normalize to 0-1) ---</span></span>
+<span id="cb38-33"><a href="#cb38-33" aria-hidden="true" tabindex="-1"></a>  SR_norm  <span class="ot">&lt;-</span> (SR_plot[[band]]) <span class="sc">/</span> max_pixel</span>
+<span id="cb38-34"><a href="#cb38-34" aria-hidden="true" tabindex="-1"></a>  ref_norm <span class="ot">&lt;-</span> (ref_plot[[band]]) <span class="sc">/</span> max_pixel</span>
+<span id="cb38-35"><a href="#cb38-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-36"><a href="#cb38-36" aria-hidden="true" tabindex="-1"></a>  ssim_out  <span class="ot">&lt;-</span> <span class="fu">capture.output</span>(<span class="fu">ssim_raster</span>(SR_norm, ref_norm))</span>
+<span id="cb38-37"><a href="#cb38-37" aria-hidden="true" tabindex="-1"></a>  ssim_line <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">"SSIM:"</span>, ssim_out, <span class="at">value =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span>]</span>
+<span id="cb38-38"><a href="#cb38-38" aria-hidden="true" tabindex="-1"></a>  ssim_val  <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">".*SSIM: ([0-9.]+).*"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">1"</span>, ssim_line))</span>
+<span id="cb38-39"><a href="#cb38-39" aria-hidden="true" tabindex="-1"></a>  ssim_vals <span class="ot">&lt;-</span> <span class="fu">c</span>(ssim_vals, ssim_val)</span>
+<span id="cb38-40"><a href="#cb38-40" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb38-41"><a href="#cb38-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-42"><a href="#cb38-42" aria-hidden="true" tabindex="-1"></a>rmse_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(rmse_vals)</span>
+<span id="cb38-43"><a href="#cb38-43" aria-hidden="true" tabindex="-1"></a>r2_avg   <span class="ot">&lt;-</span> <span class="fu">mean</span>(r2_vals)</span>
+<span id="cb38-44"><a href="#cb38-44" aria-hidden="true" tabindex="-1"></a>R2_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(R2_vals) </span>
+<span id="cb38-45"><a href="#cb38-45" aria-hidden="true" tabindex="-1"></a>psnr_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(psnr_vals)</span>
+<span id="cb38-46"><a href="#cb38-46" aria-hidden="true" tabindex="-1"></a>ssim_avg <span class="ot">&lt;-</span> <span class="fu">mean</span>(ssim_vals)</span>
+<span id="cb38-47"><a href="#cb38-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-48"><a href="#cb38-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Annotation text</span></span>
+<span id="cb38-49"><a href="#cb38-49" aria-hidden="true" tabindex="-1"></a>metrics_text <span class="ot">&lt;-</span> <span class="fu">paste</span>(</span>
+<span id="cb38-50"><a href="#cb38-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"RMSE = "</span>, <span class="fu">round</span>(rmse_avg, <span class="dv">2</span>)),</span>
+<span id="cb38-51"><a href="#cb38-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"r² = "</span>, <span class="fu">round</span>(r2_avg, <span class="dv">3</span>)),</span>
+<span id="cb38-52"><a href="#cb38-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"R² = "</span>, <span class="fu">round</span>(R2_avg, <span class="dv">3</span>)),</span>
+<span id="cb38-53"><a href="#cb38-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"PSNR = "</span>, <span class="fu">round</span>(psnr_avg, <span class="dv">2</span>), <span class="st">" dB"</span>),</span>
+<span id="cb38-54"><a href="#cb38-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"SSIM = "</span>, <span class="fu">round</span>(ssim_avg, <span class="dv">3</span>)),</span>
+<span id="cb38-55"><a href="#cb38-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span></span>
+<span id="cb38-56"><a href="#cb38-56" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Vizualize.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scatterplot the values and add the metrics</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plot_data, <span class="fu">aes</span>(<span class="at">x =</span> ref, <span class="at">y =</span> SR, <span class="at">color =</span> Band)) <span class="sc">+</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">size =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">override.aes =</span> <span class="fu">list</span>(<span class="at">size =</span> <span class="dv">3</span>))) <span class="sc">+</span></span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">option =</span> <span class="st">"B"</span>) <span class="sc">+</span></span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Super-resolution vs reference map"</span>,</span>
-<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Reference map"</span>,</span>
-<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Super-resolution map"</span>,</span>
-<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Band"</span></span>
-<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
-<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="cn">Inf</span>, <span class="at">y =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">hjust =</span> <span class="fl">1.1</span>, <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>,</span>
-<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>           <span class="at">label =</span> metrics_text, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">color =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scatterplot the values and add the metrics</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plot_data, <span class="fu">aes</span>(<span class="at">x =</span> ref, <span class="at">y =</span> SR, <span class="at">color =</span> Band)) <span class="sc">+</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">size =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">override.aes =</span> <span class="fu">list</span>(<span class="at">size =</span> <span class="dv">3</span>))) <span class="sc">+</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">option =</span> <span class="st">"B"</span>) <span class="sc">+</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Super-resolution vs reference map"</span>,</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Reference map"</span>,</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Super-resolution map"</span>,</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Band"</span></span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="cn">Inf</span>, <span class="at">y =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">hjust =</span> <span class="fl">1.1</span>, <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>,</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>           <span class="at">label =</span> metrics_text, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">color =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
