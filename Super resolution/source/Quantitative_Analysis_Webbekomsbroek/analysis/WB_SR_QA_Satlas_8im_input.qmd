@@ -296,7 +296,7 @@ for (band in bands) {
 
   # R² 
   ss_res <- sum((SR_vals - ref_vals)^2)
-  ss_tot <- sum((SR_vals - mean(SR_vals))^2)
+  ss_tot <- sum((ref_vals - mean(ref_vals))^2)
   R2 <- 1 - (ss_res / ss_tot)
   R2_vals <- c(R2_vals, R2)
 
@@ -445,7 +445,7 @@ for (band in bands) {
 
   # R²
   ss_res <- sum((SR_vals - ref_vals)^2)
-  ss_tot <- sum((SR_vals - mean(SR_vals))^2)
+  ss_tot <- sum((ref_vals - mean(ref_vals))^2)
   R2 <- 1 - (ss_res / ss_tot)
   R2_vals <- c(R2_vals, R2)
 
@@ -465,6 +465,7 @@ for (band in bands) {
 
 rmse_avg <- mean(rmse_vals)
 r2_avg   <- mean(r2_vals)
+R2_avg   <- mean(R2_vals)  
 psnr_avg <- mean(psnr_vals)
 ssim_avg <- mean(ssim_vals)
 
@@ -665,7 +666,7 @@ for (band in bands) {
 
   # R²
   ss_res <- sum((SR_vals - ref_vals)^2)
-  ss_tot <- sum((SR_vals - mean(SR_vals))^2)
+  ss_tot <- sum((ref_vals - mean(ref_vals))^2)
   R2 <- 1 - (ss_res / ss_tot)
   R2_vals <- c(R2_vals, R2)
 
@@ -815,7 +816,7 @@ for (band in bands) {
   
   # R²
   ss_res <- sum((SR_vals - ref_vals)^2)
-  ss_tot <- sum((SR_vals - mean(SR_vals))^2)
+  ss_tot <- sum((ref_vals - mean(ref_vals))^2)
   R2 <- 1 - (ss_res / ss_tot)
   R2_vals <- c(R2_vals, R2)
 
@@ -835,6 +836,7 @@ for (band in bands) {
 
 rmse_avg <- mean(rmse_vals)
 r2_avg   <- mean(r2_vals)
+R2_avg   <- mean(R2_vals)
 psnr_avg <- mean(psnr_vals)
 ssim_avg <- mean(ssim_vals)
 
