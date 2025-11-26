@@ -24,10 +24,20 @@ Biodiversa+[^fnd]
 
 <!-- description: start -->
 Within this repository, you will find the scripts that INBO has developed for the Biodiversa+ Habitat pilot project (2023-2025).
-Each subtaks has its own folder with source (analysis/data/media) and output folder.
+Each subtaks has its own subfolder. 
 
-R sripts with there documentation are provided in Rmarkdown files and rendered as HTML files. 
-Python scripts are provided as Jupyter notebooks.
+### 📂 Project Modules
+
+#### 1. 🌊 Sentinel-2 Inundation Model Validation
+A specific R workflow to validate and compare **Jussila** and **WiW** inundation models against Sentinel-2 imagery using OpenEO.
+* **Key Features:** Batch processing (multi-site/multi-year), automated pre-processing, and comparative synthesis reporting.
+* [**👉 Go to Documentation & Workflow**](./Inundation/README.md)
+
+---
+
+**General Note:**
+* R scripts and their documentation are provided in R files or Rmarkdown files (rendered as HTML).
+* Python scripts are provided as Jupyter notebooks.
 <!-- description: end -->
 
 [![INBOLogo](./Logos/image-1.png)](https://www.vlaanderen.be/inbo/home/)
