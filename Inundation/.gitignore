@@ -1,0 +1,19 @@
+# --- Ignore Local Data & Outputs ---
+data/
+output/
+
+# --- Ignore R System Files (Local) ---
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# --- Ignore Secrets/Auth ---
+.secrets/
+.httr-oauth
+
+# --- EXCEPTIONS ---
+# We generally ignore .RData above, but we MUST force git to track
+# the model files located in your source folder.
+!source/jussila_decisiontree.RData
+!source/WiW_decisiontree.RData
