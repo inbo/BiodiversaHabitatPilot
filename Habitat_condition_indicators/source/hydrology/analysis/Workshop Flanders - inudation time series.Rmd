@@ -133,10 +133,10 @@ plot(AOI["ID"])
 ```{r load the NetCDF datacubes}
 # First: proxy loading (fast)
 obj <- read_stars(paste0(folder,"intermediate/polygon_Demervallei_3.nc"), proxy = TRUE) # Region code: 1: Kloosterbeemden, 2: Schulensmeer, 3: Webbekomsbroek
-obj2 <- read_stars(paste0(folder,"intermediate/polygon_Demervallei_new_3.nc"), proxy = TRUE) 
+obj2 <- read_stars(paste0(folder,"intermediate/polygon_Demervallei_new_3.nc"), proxy = TRUE)
 
-obj3 <- read_stars(paste0(folder,"intermediate/polygon_Demervallei_last_3.nc"), proxy = TRUE) 
- 
+obj3 <- read_stars(paste0(folder,"intermediate/polygon_Demervallei_last_3.nc"), proxy = TRUE)
+
 # Ensure both have the same dimension names
 # names(st_dimensions(obj))
 # names(st_dimensions(obj2))
@@ -146,7 +146,7 @@ obj3 <- read_stars(paste0(folder,"intermediate/polygon_Demervallei_last_3.nc"), 
 obj  <- adrop(obj)
 obj2 <- adrop(obj2)
 obj3 <- adrop(obj3)
- 
+
 # Now combine along time
 combined <- c(obj, obj2, along = "t")
 combined <- c(combined, obj3, along = "t")
@@ -160,7 +160,7 @@ Remove the data layers that we wont use in the workshop to make sure we have eno
 
 ```{r combine the datacubes into 1 datacube}
 obj <- combined # Assign the combined datacube to the obj datacube (make a copy)
-rm(obj2, obj3, combined) # Remove obj2, combined.  
+rm(obj2, obj3, combined) # Remove obj2, combined.
 
 # Load now the data in memory:
 obj <- st_as_stars(obj, along = "t")

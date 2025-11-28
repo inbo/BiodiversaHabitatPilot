@@ -1,0 +1,25 @@
+Information Metria Team (Nils Gumaelius)
+
+Hi again,
+
+ 
+
+I looked through the available s2 images in the area and could only find the sentinel image from 1st of march which didn’t have clouds.
+
+Unfortunately, we haven’t got any good results from a single image as  input before but I tried running the model with only the 1st of march image as input, I attach the tif file in the mail.
+
+As you can see it didn’t look that good, and it couldn’t recognize the floodings. (May be hard without a NIR/SWIR band as inputs though, since it looks kinda green ish in the sen2 rgb bands).
+
+ 
+
+The 20_S2_bands and 10_S2_bands models still only outputs RGB results so it would be a completely different thing from the pansharpening. However, I guess these models would be much better at detecting the water in floodings for example as its more obvious in these bands?. However, these models need 8 images and when we’ve tried normalizing as the instructions in the github we’ve got bad results.
+
+
+So unfortunately, I don’t have a good way to get superres images for that date. If you have any questions or ideas let me know!
+
+ 
+
+Best w
+
+blended_mosaic: 
+* RBG high resolution image of the area based on one single input image
