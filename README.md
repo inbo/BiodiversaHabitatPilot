@@ -39,9 +39,9 @@ A specific R workflow to download and analyse **Sentinel-2 time-series imagery**
 * [**👉 Go to Documentation & Workflow**](./Habitat_condition_indicators/README.md)
 
 #### 3. :mag_right: Super resolution
-A pixel-wise comparisment between super resolution products (**satlas ESRGAN model** https://github.com/allenai/satlas-super-resolution and **Gamma Earth S2DR3 model** https://colab.research.google.com/drive/18phbwA1iYG5VDGN2WjK7WrWYi-FdCHJ5 with reference images: winter aerial ortho imagery and Sentinel-2).
+A pixel-wise comparisment between super resolution products (**satlas ESRGAN model** and **Gamma Earth S2DR3 model** with reference images: winter aerial ortho imagery and Sentinel-2).
 * **Key Features:** super resolution, pixel-wise comparisment.
-* [**👉 Go to Documentation & Workflow**](./Super resolution/README.md)
+* [**👉 Go to Documentation & Workflow**](./Super%20resolution/README.md)
 ---
 
 **General Note:**
