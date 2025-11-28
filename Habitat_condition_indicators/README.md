@@ -14,6 +14,8 @@ The workflow for acquiring satellite imagery via OpenEO is provided, which was u
 
 [👉 **Scripts can be found here**](./source/analysis/hydrology/analysis/)
 
+## Scripts
+
 * **Retrieve Datacube OpenEO - Demervalley.Rmd**: markdown file that explains on how to batch process and download Sentinel 2 time series data through OpenEO.
 
 * **Datacube_Analysis_Demervalley_Webbekomsbroek.Rmd**: markdown file that demonstrates how time series data can be converted into usefull indicators (soil moisture and inundation). This for habitats in Webbekomsbroek.
