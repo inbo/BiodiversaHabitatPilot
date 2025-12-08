@@ -42,6 +42,12 @@ A specific R workflow to download and analyse **Sentinel-2 time-series imagery**
 A pixel-wise comparisment between super resolution products (**satlas ESRGAN model** and **Gamma Earth S2DR3 model** with reference images: winter aerial ortho imagery and Sentinel-2).
 * **Key Features:** super resolution, pixel-wise comparisment.
 * [**👉 Go to Documentation & Workflow**](./Super%20resolution/README.md)
+
+
+#### 4. :herb: EUGW_validation
+This folder contains scripts to support validation of the EU Grassland Watch typology maps. Among others (1) power analysis and stratified sampling scripts to support field **survey design**, (2) Sankey-diagrams for **change detection** in the EUGW products and (3) a jupyter notebook for binary validation (grassland vs non-grassland) of the EUGW typology maps with **ortho imagery** as a reference.    
+* **Key Features:** ortho validation, Sankey-diagrams, Power analysis, Stratified random sampling
+* [**👉 Go to Documentation & Workflow**](./EUGW_validation/README.md)
 ---
 
 **General Note:**
