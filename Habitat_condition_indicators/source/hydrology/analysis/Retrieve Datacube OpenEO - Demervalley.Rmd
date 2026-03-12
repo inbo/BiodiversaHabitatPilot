@@ -32,12 +32,12 @@ https://orcid.org/0000-0003-0173-1123
 </p>
 
 <p>
-<strong>Tytti Jussila</strong><br>
-Finnish Environment Institute<br>
-<a href='https://orcid.org/0000-0003-4646-0152' target='_blank'>
+<strong>Hans Gardfjell</strong><br>
+Sveriges Lantbruksuniversitet<br>
+<a href='https://orcid.org/0009-0004-5304-3095' target='_blank'>
 <img src='G:/Gedeelde drives/Team_BioDiv/5_Projecten/2024_Biodiversa_habitatpilot/WP2_3/INBO_Github_Biodiversa_Habitat_Pilot/Habitat_condition_indicators/source/hydrology/media/Orcid_icon.png' alt='ORCID' 
      style='width:18px; vertical-align:middle; margin-right:4px;'> 
-https://orcid.org/0000-0003-4646-0152
+https://orcid.org/0009-0004-5304-3095
 </a>
 </p>
 ")
