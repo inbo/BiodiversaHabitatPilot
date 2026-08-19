@@ -30,7 +30,7 @@ fqdn==1.5.1
 fsspec==2025.7.0
 gdown==5.2.2
 geojson==3.2.0
-geopandas==1.0.1
+geopandas==1.1.2
 gitdb==4.0.12
 GitPython==3.1.58
 h5netcdf==1.6.1
