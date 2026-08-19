@@ -99,7 +99,7 @@ scooby==0.10.1
 seaborn==0.13.2
 sentry-sdk==2.34.1
 server-thread==0.3.0
-setuptools==78.1.1
+setuptools==83.0.0
 shapely==2.1.1
 shtab==1.7.2
 smmap==5.0.2
