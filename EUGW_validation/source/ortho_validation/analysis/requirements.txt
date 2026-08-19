@@ -74,7 +74,7 @@ pillow==12.3.0
 pipreqs==0.4.13
 plotly==6.1.1
 pooch==1.8.2
-protobuf==6.31.1
+protobuf==6.33.5
 psygnal==0.13.0
 py-cpuinfo==9.0.0
 pydantic==2.11.4
